@@ -94,6 +94,8 @@ char osc1PhaseShift = 0;
 unsigned char osc1Weight = 255;
 volatile unsigned short osc1Out[3] = {0};
 volatile bool osc1NoteSync = false;
+bool osc1Busy = false;
+unsigned char osc1Note = 0;
 
 unsigned long osc2Freq = 0;
 volatile unsigned long osc2Phaccu = 0;
@@ -104,8 +106,15 @@ char osc2OctaveShift = 0;
 char osc2PhaseShift = 0;
 unsigned char osc2Weight = 0;
 volatile unsigned short osc2Out[3] = {0};
-volatile bool osc2Sync = true;
+volatile bool osc2Sync = false;
+unsigned char osc2Note = 0;
+bool osc2Busy = false;
 
+bool duoMode = false;
+bool ringMod = false;
+
+volatile unsigned long lfoTWord = 0;
+volatile unsigned long lfoPhaccu = 0;
 unsigned long lfoFreq = 0;
 unsigned char lfoWaveForm = WAVE_FLAT;
 unsigned char lfoRoute = 0;
@@ -128,6 +137,8 @@ volatile unsigned short prevInput[4] = {0};
 
 volatile bool notePlaying = false;
 volatile unsigned char playThisNote = 48;
+volatile unsigned char usedKeys[88] = {0};
+volatile unsigned char highNote = 0;
 
 volatile unsigned char osc1WaveForm = WAVE_LSAW;
 volatile unsigned char osc2WaveForm = WAVE_RSAW;
@@ -173,7 +184,7 @@ inline void mixerMenuUpdate(void);
 inline void mixerMenuOsc1WeightUpdate(void);
 inline void mixerMenuOsc2WeightUpdate(void);
 inline void mixerMenuOsc2SyncUpdate(void);
-inline void mixerMenuEmptyLine(void);
+inline void mixerMenuRingModUpdate(void);
 
 inline void lfoMenuUpdate(void);
 inline void lfoMenuWaveformUpdate(void);
@@ -877,6 +888,20 @@ int main(void)
 					mixerMenuOsc2SyncUpdate();
 				}
 			}
+
+			if(menuChange[MENU_MIX][0] != 0)
+			{
+				if(adcValue[0] > 512 && ringMod != true)
+				{
+					ringMod = true;
+					mixerMenuRingModUpdate();
+				}
+				else if(adcValue[0] < 512 && ringMod != false)
+				{
+					ringMod = false;
+					mixerMenuRingModUpdate();
+				}
+			}
 			break;
 
 			case MENU_FILTER:
@@ -963,8 +988,8 @@ void oscInit() {
 
 void noteUpdate()
 {
-	osc1Freq = 	keyFreq[playThisNote + osc1SemisShift];
-	osc2Freq = keyFreq[playThisNote + osc2SemisShift + (osc2OctaveShift*12)];
+	osc1Freq = 	keyFreq[osc1Note + osc1SemisShift];
+	osc2Freq = keyFreq[osc2Note + osc2SemisShift + (osc2OctaveShift*12)];
 
 	unsigned long centsConst = 0x27*osc1CentsShift;
 	osc1Freq = osc1Freq + fixedMultiply(osc1Freq, centsConst);
@@ -974,6 +999,7 @@ void noteUpdate()
 
 	osc1TWord = fixedMultiply(osc1Freq, stepConst);
 	osc2TWord = fixedMultiply(osc2Freq, stepConst);
+	lfoTWord = fixedMultiply(lfoFreq, stepConst);
 }
 
 inline void writeLine(unsigned char line, char* str)
@@ -1137,7 +1163,7 @@ inline void mixerMenuUpdate()
 	mixerMenuOsc1WeightUpdate();
 	mixerMenuOsc2WeightUpdate();
 	mixerMenuOsc2SyncUpdate();
-	mixerMenuEmptyLine();
+	mixerMenuRingModUpdate();
 }
 
 inline void mixerMenuOsc1WeightUpdate()
@@ -1177,9 +1203,21 @@ inline void mixerMenuOsc2SyncUpdate()
 	writeLine(4, buf);
 }
 
-inline void mixerMenuEmptyLine()
+inline void mixerMenuRingModUpdate()
 {
-	writeLine(5, "            ");
+	char buf[20];
+	
+	sprintf(buf, "%s", ringModLine);
+	if(ringMod != false)
+	{
+		sprintf(buf + 6, "%s", onString);
+	}
+	else
+	{
+		sprintf(buf + 6, "%s", offstring);
+	}
+	strcat(buf, "    ");
+	writeLine(5, buf);
 }
 
 inline void lfoMenuUpdate()
@@ -1355,16 +1393,53 @@ ISR(USART_RX_vect)
 			{
 				case NOTE_ON:
 				//writeLine(1, "NOTE ON   ");
-				playThisNote = commandBytes[1] - MIDI_OFFSET;
+				usedKeys[commandBytes[1] - MIDI_OFFSET] = 1;
+				if(commandBytes[1] - MIDI_OFFSET > highNote)
+				{
+					highNote = commandBytes[1] - MIDI_OFFSET;
+				}
+
+				if(duoMode)
+				{
+				}
+				else
+				{
+					osc1Note = commandBytes[1] - MIDI_OFFSET;
+					osc2Note = osc1Note;
+
+					osc1Busy = (osc2Busy = true);
+				}
 				notePlaying = true;
 				noteUpdate();
 				break;
 				
 				case NOTE_OFF:
 				//writeLine(1, "NOTE OFF   ");
-				if(playThisNote == commandBytes[1] - MIDI_OFFSET)
+				usedKeys[commandBytes[1] - MIDI_OFFSET] = 0;
+				if(duoMode)
 				{
-					notePlaying = false;
+
+				}
+				else
+				{
+					if(commandBytes[1] - MIDI_OFFSET == osc1Note)
+					{
+						notePlaying = false;
+						osc1Busy = (osc2Busy = false);
+
+						/*while(highNote >= 0)
+						{
+							if(usedKeys[highNote] == 1)
+							{
+								osc1Note = (osc2Note = highNote);
+								notePlaying = true;
+								osc1Busy = (osc2Busy = true);
+								break;
+							}
+
+							highNote--;
+						}*/
+					}
 				}
 				break;
 			}
@@ -1407,9 +1482,9 @@ ISR(TIMER2_OVF_vect)
 		if(osc1WaveForm == WAVE_NOISE)
 			osc1Out[2] = lfsrState;
 
-		if(osc2Sync &&  (unsigned char)(*((unsigned char*)(&osc1Phaccu[1]) + 2)) <  (unsigned char)(*((unsigned char*)(&osc1Phaccu[0]) + 2)) &&  (unsigned char)(*((unsigned char*)(&osc1Phaccu[1]) + 2)) < (unsigned char)(*((unsigned char*)(&osc1Phaccu[2]) + 2)))
+		if(osc2Sync && (unsigned char)(*((unsigned char*)(&osc1Phaccu[1]) + 2)) <  (unsigned char)(*((unsigned char*)(&osc1Phaccu[0]) + 2)) &&  (unsigned char)(*((unsigned char*)(&osc1Phaccu[1]) + 2)) < (unsigned char)(*((unsigned char*)(&osc1Phaccu[2]) + 2)))
 		{
-			osc2Phaccu = 0;
+			osc2Phaccu = osc1Phaccu[2];
 		}
 
 		osc2Out[2] = pgm_read_byte(analogWaveTable + waveformOffset[osc2WaveForm] + (unsigned char)(*((unsigned char*)(&osc2Phaccu) + 2) + osc2PhaseShift));
@@ -1422,7 +1497,10 @@ ISR(TIMER2_OVF_vect)
 		osc1Out[2] *= osc1Weight;
 		osc2Out[2] *= osc2Weight;
 
-		temp = osc1Out[2] + osc2Out[2];
+		if(ringMod)
+			temp = osc1Out[2] ^ osc2Out[2];
+		else
+			temp = osc1Out[2] + osc2Out[2];
 		
 		/*switch(filterMode)
 		{

@@ -157,6 +157,7 @@ const char mixingMenuTitle[] PROGMEM = "MIXING CTRL.";
 const char osc1WeightLine[] PROGMEM = "WEIGHT1: ";
 const char osc2WeightLine[] PROGMEM = "WEIGHT2: ";
 const char osc2SyncLine[] PROGMEM = "SYNC 2: ";
+const char ringModLine[] PROGMEM = "RING: ";
 
 const char onString[] PROGMEM = "ON";
 const char offstring[] PROGMEM = "OFF";
