@@ -49,6 +49,8 @@
 #define PC			12
 #define PITCH_WHEEL	14
 
+#define MIDI_OFFSET	21
+
 //MIDI CC
 #define CC_osc1WaveForm		0x77
 #define CC_osc2WaveForm		0x76
@@ -84,7 +86,7 @@ unsigned char commandBytes[3];
 unsigned char commandCount = 0;
 
 unsigned long osc1Freq = 0;
-volatile unsigned long osc1Phaccu = 0;
+volatile unsigned long osc1Phaccu[3] = {0};
 volatile unsigned long osc1TWord = 0;
 char osc1CentsShift = 0;
 char osc1SemisShift = 0;
@@ -102,7 +104,7 @@ char osc2OctaveShift = 0;
 char osc2PhaseShift = 0;
 unsigned char osc2Weight = 0;
 volatile unsigned short osc2Out[3] = {0};
-volatile bool osc2Sync = false;
+volatile bool osc2Sync = true;
 
 unsigned long lfoFreq = 0;
 unsigned char lfoWaveForm = WAVE_FLAT;
@@ -124,8 +126,8 @@ volatile unsigned char resMix = 0;
 volatile unsigned short prevOutput[4] = {0};
 volatile unsigned short prevInput[4] = {0};
 
-bool notePlaying = true;
-unsigned char playThisNote = 48;
+volatile bool notePlaying = false;
+volatile unsigned char playThisNote = 48;
 
 volatile unsigned char osc1WaveForm = WAVE_LSAW;
 volatile unsigned char osc2WaveForm = WAVE_RSAW;
@@ -136,6 +138,8 @@ unsigned char filterCutoff = 255;
 bool btnPressed[6] = {0};
 bool btnCanPress[6] = {0};
 unsigned char btnLastPressed[6] = {0};
+
+unsigned char adcUpdate = 0;
 
 unsigned short lfsrState = 0xACE1;
 
@@ -224,8 +228,13 @@ int main(void)
 	
 	while(1)
 	{
+		adcUpdate++;
 		//Refresh analog conversion
-		sbi(ADCSRA, ADSC);
+		if(adcUpdate > 10)
+		{
+			sbi(ADCSRA, ADSC);
+			adcUpdate = 0;
+		}
 		
 		//Button Reading
 		if(!(OSC1_BTN_RD & (1 << OSC1_BTN_PIN)))
@@ -445,7 +454,7 @@ int main(void)
 			{
 				if(osc1CentsShift != (adcValue[1] >> 4) - 32)
 				{
-					osc1CentsShift = (adcValue[1] >> 4) - 32;
+					//osc1CentsShift = (adcValue[1] >> 4) - 32;
 					menuKnobPos[MENU_OSC1][1] = adcValue[1];
 					osc1MenuCentsUpdate();
 					noteUpdate();
@@ -494,8 +503,8 @@ int main(void)
 				updateADC[3] = false;
 			}
 			
-		if(menuChange[MENU_OSC2][3] != 0)
-		{
+			if(menuChange[MENU_OSC2][3] != 0)
+			{
 				if(adcValue[3] < 146)
 				{
 					if(osc2WaveForm != WAVE_SINE)
@@ -562,18 +571,19 @@ int main(void)
 			}
 			if(menuChange[MENU_OSC2][2] != 0)
 			{
-				if(osc2SemisShift != (adcValue[2] >> 2) - 128)
+				if(osc2SemisShift != (adcValue[2] >> 4) - 32)
 				{
-					osc2SemisShift = (adcValue[2] >> 2) - 128;
+					osc2SemisShift = (adcValue[2] >> 4) - 32;
 					menuKnobPos[MENU_OSC2][2] = adcValue[2];
 					osc2MenuSemisUpdate();
+					noteUpdate();
 				}
 			}
 			if(menuChange[MENU_OSC2][1] != 0)
 			{
 				if(osc2CentsShift != (adcValue[1] >> 2) - 128)
 				{
-					osc2CentsShift = (adcValue[1] >> 2) - 128;
+					//osc2CentsShift = (adcValue[1] >> 2) - 128;
 					menuKnobPos[MENU_OSC2][1] = adcValue[1];
 					osc2MenuCentsUpdate();
 				}
@@ -657,7 +667,7 @@ int main(void)
 					if(lfoWaveForm != WAVE_SINE)
 					{
 						lfoWaveForm = WAVE_SINE;
-						menuKnobPos[MENU_LFO][0] = 85;
+						menuKnobPos[MENU_LFO][3] = 85;
 						lfoMenuWaveformUpdate();
 					}
 				}
@@ -666,7 +676,7 @@ int main(void)
 					if(lfoWaveForm != WAVE_TRI)
 					{
 						lfoWaveForm = WAVE_TRI;
-						menuKnobPos[MENU_LFO][0] = 171 + 85;
+						menuKnobPos[MENU_LFO][3] = 171 + 85;
 						lfoMenuWaveformUpdate();
 					}
 				}
@@ -675,7 +685,7 @@ int main(void)
 					if(lfoWaveForm != WAVE_LSAW)
 					{
 						lfoWaveForm = WAVE_LSAW;
-						menuKnobPos[MENU_LFO][0] = 341 + 85;
+						menuKnobPos[MENU_LFO][3] = 341 + 85;
 						lfoMenuWaveformUpdate();
 					}
 				}
@@ -684,7 +694,7 @@ int main(void)
 					if(lfoWaveForm != WAVE_RSAW)
 					{
 						lfoWaveForm = WAVE_RSAW;
-						menuKnobPos[MENU_LFO][0] = 511 + 85;
+						menuKnobPos[MENU_LFO][3] = 511 + 85;
 						lfoMenuWaveformUpdate();
 					}
 				}
@@ -693,7 +703,7 @@ int main(void)
 					if(lfoWaveForm != WAVE_SQU)
 					{
 						lfoWaveForm = WAVE_SQU;
-						menuKnobPos[MENU_LFO][0] = 682 + 85;
+						menuKnobPos[MENU_LFO][3] = 682 + 85;
 						lfoMenuWaveformUpdate();
 					}
 				}
@@ -702,7 +712,7 @@ int main(void)
 					if(lfoWaveForm != WAVE_FLAT)
 					{
 						lfoWaveForm = WAVE_FLAT;
-						menuKnobPos[MENU_LFO][0] = 852 + 85;
+						menuKnobPos[MENU_LFO][3] = 852 + 85;
 						lfoMenuWaveformUpdate();
 					}
 				}
@@ -712,7 +722,7 @@ int main(void)
 				if((adcValue[2] >> 2) != lfoPrintFreq)
 				{
 					lfoPrintFreq = adcValue[2] >> 2;
-					menuKnobPos[MENU_LFO][0] = adcValue[2];
+					menuKnobPos[MENU_LFO][2] = adcValue[2];
 					lfoMenuFrequencyUpdate();
 				}
 			}
@@ -721,7 +731,7 @@ int main(void)
 				if((adcValue[1] >> 2) != lfoDepth)
 				{
 					lfoDepth = adcValue[1] >> 2;
-					menuKnobPos[MENU_LFO][0] = adcValue[1];
+					menuKnobPos[MENU_LFO][1] = adcValue[1];
 					lfoMenuDepthUpdate();
 				}
 			}
@@ -809,14 +819,71 @@ int main(void)
 				}
 				else if(adcValue[0] < 1023)
 				{
-					if(lfoRoute != ROUTE_OSC1)
+					if(lfoRoute != ROUTE_CUTOFF)
 					{
-						lfoRoute = ROUTE_OSC1;
+						lfoRoute = ROUTE_CUTOFF;
 						lfoMenuRouteUpdate();
 					}
 				}
 			}
-			break;		
+			break;
+
+			case MENU_MIX:
+			if(updateADC[0] && adcValue[0] < menuKnobPos[MENU_MIX][0] + 10 && adcValue[0] > (menuKnobPos[MENU_MIX][0] > 10 ? menuKnobPos[MENU_MIX][0] - 10 : 0))
+			{
+				menuChange[MENU_MIX][0] = 1;
+				updateADC[0] = false;
+			}
+			if(updateADC[1] && adcValue[1] < menuKnobPos[MENU_MIX][1] + 10 && adcValue[1] > (menuKnobPos[MENU_MIX][1] > 10 ? menuKnobPos[MENU_MIX][1] - 10 : 0))
+			{
+				menuChange[MENU_MIX][1] = 1;
+				updateADC[1] = false;
+			}
+			if(updateADC[2] && adcValue[2] < menuKnobPos[MENU_MIX][2] + 10 && adcValue[2] > (menuKnobPos[MENU_MIX][2] > 10 ? menuKnobPos[MENU_MIX][2] - 10 : 0))
+			{
+				menuChange[MENU_MIX][2] = 1;
+				updateADC[2] = false;
+			}
+			if(updateADC[3] && adcValue[3] < menuKnobPos[MENU_MIX][3] + 10 && adcValue[3] > (menuKnobPos[MENU_MIX][3] > 10 ? menuKnobPos[MENU_MIX][3] - 10 : 0))
+			{
+				menuChange[MENU_MIX][3] = 1;
+				updateADC[3] = false;
+			}
+
+			if(menuChange[MENU_MIX][3] != 0)
+			{
+				if((adcValue[3] >> 2) != osc1Weight)
+				{
+					osc1Weight = adcValue[3] >> 2;
+					osc2Weight = ~osc1Weight;
+
+					menuKnobPos[MENU_MIX][3] = adcValue[3];
+
+					mixerMenuOsc1WeightUpdate();
+					mixerMenuOsc2WeightUpdate();
+				}
+			}
+
+			if(menuChange[MENU_MIX][1] != 0)
+			{
+				if(adcValue[1] > 512 && osc2Sync != true)
+				{
+					osc2Sync = true;
+					mixerMenuOsc2SyncUpdate();
+				}
+				else if(adcValue[1] < 512 && osc2Sync != false)
+				{
+					osc2Sync = false;
+					mixerMenuOsc2SyncUpdate();
+				}
+			}
+			break;
+
+			case MENU_FILTER:
+			break;
+
+			case MENU_ARP:
+			break;
 		}
 	}
 }
@@ -1270,15 +1337,35 @@ ISR(USART_RX_vect)
 		if(commandCount == 3)
 		{
 			commandCount = 1;
-			
+
+			/*char buf[20];
+			sprintf(buf, "%d", commandBytes[0]);
+			writeLine(0, buf);
+
+			sprintf(buf, "%d", commandBytes[1]);
+			writeLine(1, buf);
+
+			sprintf(buf, "%d", commandBytes[2]);
+			writeLine(2, buf);*/
+
+			if(commandBytes[0] == NOTE_ON && commandBytes[2] == 0)
+				commandBytes[0] = NOTE_OFF;
+
 			switch(commandBytes[0])
 			{
 				case NOTE_ON:
+				//writeLine(1, "NOTE ON   ");
+				playThisNote = commandBytes[1] - MIDI_OFFSET;
 				notePlaying = true;
+				noteUpdate();
 				break;
 				
 				case NOTE_OFF:
-				notePlaying = false;
+				//writeLine(1, "NOTE OFF   ");
+				if(playThisNote == commandBytes[1] - MIDI_OFFSET)
+				{
+					notePlaying = false;
+				}
 				break;
 			}
 		}
@@ -1300,31 +1387,34 @@ ISR(ADC_vect)
 
 ISR(TIMER2_OVF_vect)
 {
-	osc1Phaccu += osc1TWord;
-	osc2Phaccu += osc2TWord;
-	
-	lfsrUpdate();
-
 	if(notePlaying)
 	{
+		osc1Phaccu[0] = osc1Phaccu[1];
+		osc1Phaccu[1] = osc1Phaccu[2];
+		osc1Phaccu[2] += osc1TWord;
+
+		osc2Phaccu += osc2TWord;
+		
+		lfsrUpdate();
+
 		unsigned short fraction = 0;
 		unsigned short whole = 0;
 
 		osc1Out[0] = osc1Out[1];
 		osc1Out[1] = osc1Out[2];
-		osc1Out[2] = pgm_read_byte(analogWaveTable + waveformOffset[osc1WaveForm] + (unsigned char)(*((unsigned char*)(&osc1Phaccu) + 2) + osc1PhaseShift));
+		osc1Out[2] = pgm_read_byte(analogWaveTable + waveformOffset[osc1WaveForm] + (unsigned char)(*((unsigned char*)(&osc1Phaccu[2]) + 2) + osc1PhaseShift));
 		
 		if(osc1WaveForm == WAVE_NOISE)
 			osc1Out[2] = lfsrState;
 
-		if(osc2Sync && (osc1Out[1] < osc1Out[0] && osc1Out[1] < osc1Out[2]))
+		if(osc2Sync &&  (unsigned char)(*((unsigned char*)(&osc1Phaccu[1]) + 2)) <  (unsigned char)(*((unsigned char*)(&osc1Phaccu[0]) + 2)) &&  (unsigned char)(*((unsigned char*)(&osc1Phaccu[1]) + 2)) < (unsigned char)(*((unsigned char*)(&osc1Phaccu[2]) + 2)))
 		{
 			osc2Phaccu = 0;
 		}
 
-		osc2Out[2] = pgm_read_byte(analogWaveTable + pgm_read_word(waveformOffset + osc2WaveForm) + (unsigned char)(*((unsigned char*)(&osc2Phaccu) + 2) + osc2PhaseShift));
+		osc2Out[2] = pgm_read_byte(analogWaveTable + waveformOffset[osc2WaveForm] + (unsigned char)(*((unsigned char*)(&osc2Phaccu) + 2) + osc2PhaseShift));
 		
-		if(osc2WaveForm = WAVE_NOISE)
+		if(osc2WaveForm == WAVE_NOISE)
 			osc2Out[2] = lfsrState;
 
 		unsigned long temp = 0;

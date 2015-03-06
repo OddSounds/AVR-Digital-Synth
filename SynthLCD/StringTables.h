@@ -188,7 +188,9 @@ static PGM_P const routeNameTable[] PROGMEM =
 	phase1RouteName,
 	phase2RouteName,
 	osc1WaveRouteName,
-	osc2WaveRouteName
+	osc2WaveRouteName,
+	cutoffRouteName,
+	filterModeRouteName
 };
 
 const char seqMenuTitle[] PROGMEM = " SEQ  CTRL. ";
