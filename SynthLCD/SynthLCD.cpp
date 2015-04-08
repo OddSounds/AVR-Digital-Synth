@@ -110,7 +110,7 @@ volatile bool osc2Sync = false;
 unsigned char osc2Note = 0;
 bool osc2Busy = false;
 
-bool duoMode = false;
+bool duoMode = true;
 bool ringMod = false;
 
 volatile unsigned long lfoTWord = 0;
@@ -138,7 +138,7 @@ volatile unsigned short prevInput[4] = {0};
 volatile bool notePlaying = false;
 volatile unsigned char playThisNote = 48;
 volatile unsigned char usedKeys[88] = {0};
-volatile unsigned char highNote = 0;
+volatile char highNote = 0;
 
 volatile unsigned char osc1WaveForm = WAVE_LSAW;
 volatile unsigned char osc2WaveForm = WAVE_RSAW;
@@ -1401,6 +1401,22 @@ ISR(USART_RX_vect)
 
 				if(duoMode)
 				{
+					if(osc1Busy)
+					{
+						osc2Note = commandBytes[1] - MIDI_OFFSET; //Move this note to the second osc
+							
+						if(osc2Note > osc1Note)
+						{
+							char temp = osc2Note;
+							osc2Note = osc1Note;
+							osc1Note = temp;
+						}
+
+					}
+					else
+					{
+						osc1Note = (osc2Note = commandBytes[1] - MIDI_OFFSET);
+					}
 				}
 				else
 				{
@@ -1418,7 +1434,69 @@ ISR(USART_RX_vect)
 				usedKeys[commandBytes[1] - MIDI_OFFSET] = 0;
 				if(duoMode)
 				{
+					if(osc1Busy)
+					{
+						if(osc1Note == osc2Note)
+						{
+							if(commandBytes[1] - MIDI_OFFSET == osc1Note)
+							{
+								notePlaying = false;
+								osc1Busy = (osc2Busy = false);
 
+								while(highNote >= 0)
+								{
+									if(usedKeys[highNote] == 1)
+									{
+										osc1Note = (osc2Note = highNote);
+										notePlaying = true;
+										osc1Busy = (osc2Busy = true);
+										noteUpdate();
+										break;
+									}
+
+									highNote--;
+								}
+							}
+						}
+						else
+						{
+							if(commandBytes[1] - MIDI_OFFSET == osc1Note)
+							{
+								while(highNote >= 0)
+								{
+									if(usedKeys[highNote] == 1)
+									{
+										osc1Note = highNote;
+										notePlaying = true;
+										osc1Busy = (osc2Busy = true);
+										noteUpdate();
+										break;
+									}
+
+									highNote--;
+								}
+							}
+
+							if(commandBytes[1] - MIDI_OFFSET == osc1Note)
+							{
+								osc2Busy = false;
+
+								while(highNote >= 0)
+								{
+									if(usedKeys[highNote] == 1)
+									{
+										osc2Note = highNote;
+										notePlaying = true;
+										osc1Busy = (osc2Busy = true);
+										noteUpdate();
+										break;
+									}
+
+									highNote--;
+								}
+							}
+						}
+					}
 				}
 				else
 				{
@@ -1427,18 +1505,19 @@ ISR(USART_RX_vect)
 						notePlaying = false;
 						osc1Busy = (osc2Busy = false);
 
-						/*while(highNote >= 0)
+						while(highNote >= 0)
 						{
 							if(usedKeys[highNote] == 1)
 							{
 								osc1Note = (osc2Note = highNote);
 								notePlaying = true;
 								osc1Busy = (osc2Busy = true);
+								noteUpdate();
 								break;
 							}
 
 							highNote--;
-						}*/
+						}
 					}
 				}
 				break;
