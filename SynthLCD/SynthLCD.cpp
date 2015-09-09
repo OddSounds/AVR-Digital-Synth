@@ -81,29 +81,36 @@ bool updateADC[4] = {false};
 unsigned char commandBytes[3];
 unsigned char commandCount = 0;
 
+unsigned char osc1Note = 48;
 unsigned long osc1Freq = 0;
 unsigned long osc1Phaccu[3] = {0};
 unsigned long osc1TWord = 0;
-short osc1CentsShift = -10;
+short osc1CentsShift = 0;
 char dOsc1CentsShift = 0;
 char osc1SemisShift = 0;
 char dOsc1SemisShift = 0;
+char osc1OctaveShift = 0;
+char dOsc1OctaveShift = 0;
 char osc1PhaseShift = 0;
-unsigned char osc1Weight = 255;
+unsigned char osc1Weight = 0;
 unsigned short osc1Out[3] = {0};
 bool osc1NoteSync = false;
 
 unsigned long osc2Freq = 0;
 unsigned long osc2Phaccu = 0;
 unsigned long osc2TWord = 0;
-char osc2CentsShift = 0;
+short osc2CentsShift = 10;
+char dOsc2CentsShift = 0;
 char osc2SemisShift = 0;
+char dOsc2SemisShift = 0;
 char osc2OctaveShift = 0;
+char dOsc2OctaveShift = 0;
 char osc2PhaseShift = 0;
-unsigned char osc2Weight = 0;
+char dOsc2PhaseShift = 0;
+unsigned char osc2Weight = 128;
 unsigned short osc2Out[3] = {0};
 bool osc2Sync = true;
-unsigned char osc2Note = 0;
+unsigned char osc2Note = 48;
 bool osc2Busy = false;
 
 bool duoMode = true;
@@ -116,7 +123,7 @@ unsigned long lfoFreq = 0;
 unsigned char lfoWaveForm = WAVE_SINE;
 unsigned char lfoRoute = 0;
 unsigned char lfoPrintFreq = 0;
-unsigned char lfoDepth = 32;
+unsigned char lfoDepth = 255;
 char lfoDelta = 0;
 bool lfoNoteSync = false;
 FunctionPointer lfoRouteFunction = NULL;
@@ -187,11 +194,15 @@ void btnInit(void);
 
 void setup(void);
 
-void noteUpdate(void);
+inline void noteUpdate(void);
 inline void osc1NoteUpdate();
 inline void osc1CentsUpdate();
 
-inline void osc2Update();
+inline void osc2NoteUpdate();
+inline void osc2CentsUpdate();
+
+inline void osc2NoteUpdate();
+inline void osc2CentsUpdate();
 
 int main(void)
 {
@@ -245,12 +256,10 @@ void setup()
 	toFixed(880, osc2Freq);
 	osc2TWord = fixedMultiply(osc2Freq, stepConst);
 	
-	toFixed(1.5, lfoFreq);
+	toFixed(0.1, lfoFreq);
 	lfoTWord = fixedMultiply(lfoFreq, stepConst);
 	
 	char buf[100];
-	
-	centsConst = fixedMultiply(stepConst, 0x27);
 	
 	adcInit();
 	serialInit();
@@ -263,7 +272,7 @@ void setup()
 	sbi (TIMSK2,TOIE2);
 	sei();
 
-	lfoRouteFunction = lfoRouteSemis1;
+	//lfoRouteFunction = lfoRouteCents1;
 
 	noteUpdate();
 }
@@ -296,50 +305,81 @@ void oscInit() {
 
 inline void osc1NoteUpdate()
 {	
-	if(48 + (osc1SemisShift + dOsc1SemisShift) > 0)
+	if(osc1Note + (osc1SemisShift + dOsc1SemisShift) + (osc1OctaveShift*12)  < 0)
 	{
 		cli();
-		osc1TWord = keyFreq[48 + (osc1SemisShift + dOsc1SemisShift)];
+		osc1TWord = keyFreq[0];
+		sei();		
+	}
+	else if(osc1Note + (osc1SemisShift + dOsc1SemisShift) + (osc1OctaveShift*12) > 87)
+	{
+		cli();
+		osc1TWord = keyFreq[87];
 		sei();
 	}
 	else
 	{
 		cli();
-		osc1TWord = keyFreq[0];
-		sei();
+		osc1TWord = keyFreq[osc1Note + (osc1SemisShift + dOsc1SemisShift) + (osc1OctaveShift*12)];
+		sei();		
 	}
 }
 
 inline void osc1CentsUpdate()
 {
-	unsigned long centsCoef = 0x27*(osc1CentsShift + dOsc1CentsShift);
+	unsigned long cents1Coef = 0x27*(osc1CentsShift + dOsc1CentsShift);
 	
 	cli();
-	centsCoef *= osc1TWord;
-	centsCoef = ((long)centsCoef) >> 16;
-	osc1TWord += centsCoef;
+	cents1Coef *= osc1TWord;
+	cents1Coef = ((long)cents1Coef) >> 16;
+	osc1TWord += cents1Coef; 
+	sei();
+}
+
+inline void osc2NoteUpdate()
+{
+	if(osc2Note + (osc2SemisShift + dOsc2SemisShift) + (osc2OctaveShift*12)  < 0)
+	{
+		cli();
+		osc2TWord = keyFreq[0];
+		sei();
+	}
+	else if(osc2Note + (osc2SemisShift + dOsc2SemisShift) + (osc2OctaveShift*12) > 87)
+	{
+		cli();
+		osc2TWord = keyFreq[87];
+		sei();
+	}
+	else
+	{
+		cli();
+		osc2TWord = keyFreq[osc2Note + (osc2SemisShift + dOsc2SemisShift) + (osc2OctaveShift*12)];
+		sei();
+	}	
+}
+
+inline void osc2CentsUpdate()
+{
+	unsigned long cents2Coef = 0x27*(osc2CentsShift + dOsc2CentsShift);
+	
+	cli();
+	cents2Coef *= osc2TWord;
+	cents2Coef = ((long)cents2Coef) >> 16;
+	osc2TWord += cents2Coef;
 	sei();
 }
 
 void noteUpdate()
 {
-	osc1Freq = keyFreq[48];
-	//osc2Freq = keyFreq[osc2Note + osc2SemisShift + (osc2OctaveShift*12)];
-
-	unsigned long centsConst = 0x27*(osc1CentsShift + dOsc1CentsShift);
-	osc1Freq = osc1Freq + fixedMultiply(osc1Freq, centsConst);
-
-	//centsConst = 0x27*osc2CentsShift;
-	//osc2Freq = osc2Freq + fixedMultiply(osc2Freq, centsConst);
-
 	cli();
-	osc1TWord = keyFreq[48];
-	osc2TWord = fixedMultiply(osc2Freq, stepConst);
 	lfoTWord = fixedMultiply(lfoFreq, stepConst);
 	sei();
 	
 	osc1NoteUpdate();
 	osc1CentsUpdate();
+	
+	osc2NoteUpdate();
+	osc2CentsUpdate();
 }
 
 inline void lfsrUpdate()
@@ -537,31 +577,7 @@ inline void toFixed(int a, unsigned long &b)
 
 inline void toFixed(double a, unsigned long &b)
 {
-	char* doubleingPointer = (char*)&a;
-	
-	unsigned long fraction = 0;
-	fraction = (unsigned char)(*(doubleingPointer + 2) & 0x7F);
-	fraction = fraction << 8;
-	fraction |= (unsigned char)*(doubleingPointer + 1);
-	fraction = fraction << 8;
-	fraction |= (unsigned char)*doubleingPointer;
-	fraction = fraction >> 7;
-	
-	unsigned char exponent = 0;
-	exponent = (unsigned char)(*(doubleingPointer + 3) & 0x7F);
-	exponent = exponent << 1;
-	exponent |= (unsigned char)((*(doubleingPointer + 2) & 0x80) >> 7);
-	
-	b = fraction | 0x10000;
-	
-	if(exponent < 127)
-	{
-		b = b >> ((int)exponent - 127);
-	}
-	else
-	{
-		b = b << ((int)exponent - 127);
-	}
+	b = (unsigned long)(a*65536);
 }
 
 inline void toFixed(unsigned short &a, unsigned long &b)
