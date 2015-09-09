@@ -115,7 +115,6 @@
       <Value>DEBUG</Value>
     </ListValues>
   </avrgcccpp.compiler.symbols.DefSymbols>
-  <avrgcccpp.compiler.optimization.level>Optimize most (-O3)</avrgcccpp.compiler.optimization.level>
   <avrgcccpp.compiler.optimization.PackStructureMembers>True</avrgcccpp.compiler.optimization.PackStructureMembers>
   <avrgcccpp.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcccpp.compiler.optimization.AllocateBytesNeededForEnum>
   <avrgcccpp.compiler.optimization.DebugLevel>Default (-g2)</avrgcccpp.compiler.optimization.DebugLevel>
@@ -136,6 +135,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="PinDefs.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="serialLib.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="serialLib.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="StringTables.h">

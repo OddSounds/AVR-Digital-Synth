@@ -14,11 +14,14 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "PinDefs.h"
 #include "StringTables.h"
 #include "WaveTables.h"
 #include "FixedLib.h"
+
+#include "serialLib.h"
 
 #define MENU_OSC1	0
 #define MENU_OSC2	1
@@ -63,9 +66,6 @@
 #define CC_lfoRoute		0x73
 #define CC_lfoSpeed		0x12
 
-#define BAUD 31250
-#define BAUD_PRESCALLER (((F_CPU / (BAUD * 16UL))) - 1)
-
 #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
 #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
 
@@ -75,24 +75,23 @@ typedef unsigned long _16s16;
 typedef void(*FunctionPointer)();
 
 unsigned char adcSelect = 0;
-int adcValue[4];
+volatile int adcValue[4];
 bool updateADC[4] = {false};
 
 unsigned char commandBytes[3];
 unsigned char commandCount = 0;
 
 unsigned long osc1Freq = 0;
-unsigned char osc1Phaccu[3] = {0};
-unsigned long osc1CurPhaccu = 0;
+unsigned long osc1Phaccu[3] = {0};
 unsigned long osc1TWord = 0;
-char osc1CentsShift = 0;
+short osc1CentsShift = -10;
+char dOsc1CentsShift = 0;
 char osc1SemisShift = 0;
+char dOsc1SemisShift = 0;
 char osc1PhaseShift = 0;
 unsigned char osc1Weight = 255;
 unsigned short osc1Out[3] = {0};
 bool osc1NoteSync = false;
-bool osc1Busy = false;
-unsigned char osc1Note = 0;
 
 unsigned long osc2Freq = 0;
 unsigned long osc2Phaccu = 0;
@@ -101,9 +100,9 @@ char osc2CentsShift = 0;
 char osc2SemisShift = 0;
 char osc2OctaveShift = 0;
 char osc2PhaseShift = 0;
-unsigned char osc2Weight = 255;
+unsigned char osc2Weight = 0;
 unsigned short osc2Out[3] = {0};
-bool osc2Sync = false;
+bool osc2Sync = true;
 unsigned char osc2Note = 0;
 bool osc2Busy = false;
 
@@ -112,14 +111,17 @@ bool ringMod = false;
 
 unsigned long lfoTWord = 0;
 unsigned long lfoPhaccu = 0;
-unsigned short lfoOut = 0;
+unsigned short lfoOut[2] = {0};
 unsigned long lfoFreq = 0;
-unsigned char lfoWaveForm = WAVE_FLAT;
+unsigned char lfoWaveForm = WAVE_SINE;
 unsigned char lfoRoute = 0;
 unsigned char lfoPrintFreq = 0;
-unsigned char lfoDepth = 0;
+unsigned char lfoDepth = 32;
+char lfoDelta = 0;
 bool lfoNoteSync = false;
+FunctionPointer lfoRouteFunction = NULL;
 
+unsigned long centsConst;
 unsigned long stepConst;
 unsigned long refclk;
 unsigned long reftime;
@@ -144,6 +146,7 @@ unsigned char osc2WaveForm = WAVE_RSAW;
 
 unsigned char filterMode = FILTER_LOW;
 unsigned char filterCutoff = 255;
+unsigned char poles = 1;
 
 unsigned short lfsrState = 0xACE1;
 
@@ -180,22 +183,52 @@ inline void highPassFilter(unsigned long *val);
 void uartInit(void);
 
 void oscInit(void);
-
 void btnInit(void);
 
 void setup(void);
 
 void noteUpdate(void);
+inline void osc1NoteUpdate();
+inline void osc1CentsUpdate();
+
+inline void osc2Update();
 
 int main(void)
 {
 	setup();
-	
+
+	char buf[100];
+
+	putString("HELLO WORLD\r\n\r\n");
+
 	while(1)
 	{
-		sbi(ADCSRA, ADSC);
+		/*for(int i = 0; i < 4; i++)
+		{			
+			adcValue[i] = ADC;
+			ADMUX = i;
+			
+			sbi(ADCSRA, ADSC);
+			while(ADCSRA & (1 << ADSC));
+			sbi(ADCSRA, ADSC);
+			while(ADCSRA & (1 << ADSC));
+		}		
 		
-		_delay_us(100);
+		_delay_ms(1);
+		filterCutoff = adcValue[0] >> 2;
+		
+		itoa(adcValue[0], buf, 10);
+		putString(buf);
+		putChar('\t');
+		itoa(adcValue[1], buf, 10);
+		putString(buf);
+		putChar('\t');
+		itoa(adcValue[2], buf, 10);
+		putString(buf);
+		putChar('\t');	
+		itoa(adcValue[3], buf, 10);
+		putString(buf);
+		putString("\r\n");*/
 	}
 }
 
@@ -212,15 +245,25 @@ void setup()
 	toFixed(880, osc2Freq);
 	osc2TWord = fixedMultiply(osc2Freq, stepConst);
 	
+	toFixed(1.5, lfoFreq);
+	lfoTWord = fixedMultiply(lfoFreq, stepConst);
+	
+	char buf[100];
+	
+	centsConst = fixedMultiply(stepConst, 0x27);
+	
 	adcInit();
-	uartInit();
+	serialInit();
 	oscInit();
 	btnInit();
 	
 	sbi(OSC_OUT_DIR, OSC_OUT_PIN);
-	
+		
+	putString("ADC Setup\r\n");
 	sbi (TIMSK2,TOIE2);
 	sei();
+
+	lfoRouteFunction = lfoRouteSemis1;
 
 	noteUpdate();
 }
@@ -232,7 +275,7 @@ void btnInit()
 void adcInit()
 {
 	DIDR0 = (1 << ADC0D) | (1 << ADC1D) | (1 << ADC2D) | (1 << ADC3D);
-	ADCSRA = (1 << ADEN) | (1 << ADIE) | (1 << ADPS1);
+	ADCSRA = (1 << ADEN) | (1 << ADPS1);
 }
 
 void oscInit() {
@@ -251,31 +294,52 @@ void oscInit() {
 	cbi (TCCR2B, WGM22);
 }
 
-void noteUpdate()
+inline void osc1NoteUpdate()
+{	
+	if(48 + (osc1SemisShift + dOsc1SemisShift) > 0)
+	{
+		cli();
+		osc1TWord = keyFreq[48 + (osc1SemisShift + dOsc1SemisShift)];
+		sei();
+	}
+	else
+	{
+		cli();
+		osc1TWord = keyFreq[0];
+		sei();
+	}
+}
+
+inline void osc1CentsUpdate()
 {
-	osc1Freq = 	keyFreq[osc1Note + osc1SemisShift];
-	osc2Freq = keyFreq[osc2Note + osc2SemisShift + (osc2OctaveShift*12)];
-
-	unsigned long centsConst = 0x27*osc1CentsShift;
-	osc1Freq = osc1Freq + fixedMultiply(osc1Freq, centsConst);
-
-	centsConst = 0x27*osc2CentsShift;
-	osc2Freq = osc2Freq + fixedMultiply(osc2Freq, centsConst);
-
+	unsigned long centsCoef = 0x27*(osc1CentsShift + dOsc1CentsShift);
+	
 	cli();
-	osc1TWord = fixedMultiply(osc1Freq, stepConst);
-	osc2TWord = fixedMultiply(osc2Freq, stepConst);
-	lfoTWord = fixedMultiply(lfoFreq, stepConst);
+	centsCoef *= osc1TWord;
+	centsCoef = ((long)centsCoef) >> 16;
+	osc1TWord += centsCoef;
 	sei();
 }
 
-void uartInit()
+void noteUpdate()
 {
-	UBRR0H = (uint8_t)(BAUD_PRESCALLER>>8);
-	UBRR0L = (uint8_t)(BAUD_PRESCALLER);
+	osc1Freq = keyFreq[48];
+	//osc2Freq = keyFreq[osc2Note + osc2SemisShift + (osc2OctaveShift*12)];
+
+	unsigned long centsConst = 0x27*(osc1CentsShift + dOsc1CentsShift);
+	osc1Freq = osc1Freq + fixedMultiply(osc1Freq, centsConst);
+
+	//centsConst = 0x27*osc2CentsShift;
+	//osc2Freq = osc2Freq + fixedMultiply(osc2Freq, centsConst);
+
+	cli();
+	osc1TWord = keyFreq[48];
+	osc2TWord = fixedMultiply(osc2Freq, stepConst);
+	lfoTWord = fixedMultiply(lfoFreq, stepConst);
+	sei();
 	
-	UCSR0B = (1 << RXCIE0) | (1 << RXEN0) | (1 << TXEN0);
-	UCSR0C = (1 << UCSZ00) | (1 << UCSZ01);
+	osc1NoteUpdate();
+	osc1CentsUpdate();
 }
 
 inline void lfsrUpdate()
@@ -289,64 +353,10 @@ inline void lfsrUpdate()
 	}
 }
 
-ISR(USART_RX_vect)
-{
-	unsigned char msg = UDR0;
-	
-	if(msg & 0x80) //New command
-	{
-		commandBytes[0] = msg & 0xF0;
-		
-		commandCount = 1;
-	}
-	else
-	{
-		commandBytes[commandCount] = msg;
-		commandCount++;
-		
-		if(commandCount == 3)
-		{
-			commandCount = 1;
-
-			if(commandBytes[0] == NOTE_ON && commandBytes[2] == 0)
-				commandBytes[0] = NOTE_OFF;
-
-			switch(commandBytes[0])
-			{
-				case NOTE_ON:
-				notePlaying = true;
-				
-				osc2Note = osc1Note = commandBytes[1] - MIDI_OFFSET;
-				keyArray[keyArrayWrite] = osc2Note;
-				keyArrayWrite++;
-				
-				noteUpdate();
-				break;
-				
-				case NOTE_OFF:
-				if(osc1Note == commandBytes[1] - MIDI_OFFSET)
-				{
-					if(keyArrayWrite == 0)
-					{
-						notePlaying = false;
-					}
-					else
-					{
-						keyArrayWrite--;
-						osc2Note = osc1Note = keyArray[keyArrayWrite];
-					}
-				}
-				
-				break;
-			}
-		}
-	}
-}
-
 ISR(ADC_vect)
 {
+	putString("ADC Updated\r\n");
 	adcValue[adcSelect] = ADC;
-	updateADC[adcSelect] = true;
 
 	adcSelect++;
 	
@@ -360,25 +370,25 @@ ISR(TIMER2_OVF_vect)
 {
 	if(notePlaying)
 	{
-		lfsrUpdate();
-		
 		osc1Phaccu[0] = osc1Phaccu[1];
 		osc1Phaccu[1] = osc1Phaccu[2];
-		osc1Phaccu[2] = *((unsigned char*)(&osc1CurPhaccu)+2);
+		osc1Phaccu[2] += osc1TWord;
+
+		osc2Phaccu += osc2TWord;
 		
-		osc1CurPhaccu += osc1TWord;
+		lfsrUpdate();
 
 		osc1Out[0] = osc1Out[1];
 		osc1Out[1] = osc1Out[2];
-		osc1Out[2] = pgm_read_byte(analogWaveTable + waveformOffset[osc1WaveForm] + osc1Phaccu[2] + osc1PhaseShift);
+		osc1Out[2] = pgm_read_byte(analogWaveTable + waveformOffset[osc1WaveForm] + (unsigned char)(*((unsigned char*)(&osc1Phaccu[2]) + 2) + osc1PhaseShift));
 		
 		if(osc1WaveForm == WAVE_NOISE)
 		osc1Out[2] = lfsrState;
 
-		osc2Phaccu += osc2TWord;
-
-		if(osc2Sync && (osc1Phaccu[1] < osc1Phaccu[0] &&  osc1Phaccu[1] < osc1Phaccu[2]))
-		osc2Phaccu = osc1CurPhaccu;
+		if(osc2Sync &&  (unsigned char)(*((unsigned char*)(&osc1Phaccu[1]) + 2)) <  (unsigned char)(*((unsigned char*)(&osc1Phaccu[0]) + 2)) &&  (unsigned char)(*((unsigned char*)(&osc1Phaccu[1]) + 2)) < (unsigned char)(*((unsigned char*)(&osc1Phaccu[2]) + 2)))
+		{
+			osc2Phaccu = osc1Phaccu[2];
+		}
 
 		if(osc2WaveForm != WAVE_NOISE)
 			osc2Out[2] = pgm_read_byte(analogWaveTable + waveformOffset[osc2WaveForm] + (unsigned char)*((unsigned char*)(&osc2Phaccu)+2) + osc2PhaseShift);
@@ -386,44 +396,76 @@ ISR(TIMER2_OVF_vect)
 			osc2Out[2] = lfsrState;
 
 		lfoPhaccu += lfoTWord;
-		lfoOut = pgm_read_byte(analogWaveTable + waveformOffset[lfoWaveForm] + (unsigned char)*((unsigned char*)(&lfoPhaccu)+2));
-		lfoOut *= lfoDepth;
+		
+		lfoOut[0] = lfoOut[1];
+		lfoOut[1] = pgm_read_byte(analogWaveTable + waveformOffset[lfoWaveForm] + (unsigned char)*((unsigned char*)(&lfoPhaccu)+2));
+		lfoOut[1] -= 128;
 
 		unsigned long temp = 0;
-
+	
 		osc1Out[2] *= osc1Weight;
 		osc2Out[2] *= osc2Weight;
 
 		if(ringMod)
-		temp = osc1Out[2] ^ osc2Out[2];
+			temp = osc1Out[2] ^ osc2Out[2];
 		else
 		{
 			temp = osc1Out[2];
-			
-			if(*((unsigned char*)(&osc1Out[2]) + 1)  < 128 != *((unsigned char*)(&osc2Out[2]) + 1)  < 128)
-			{
-				__asm__("");
-				temp -= (0x8000 - osc2Out[2]);
-				__asm__("");
-			}
-			else
-			{
-				temp += osc2Out[2];
-			}
+			temp += osc2Out[2];
 		}
 		
-		lowPassFilter(&temp);
-		lowPassFilter(&temp);
-		lowPassFilter(&temp);
-		lowPassFilter(&temp);
+		/*switch(filterMode)
+		{
+			case FILTER_LOW:
+			switch(poles)
+			{
+				case 4:
+				lowPassFilter(&temp);
+				
+				case 3:
+				lowPassFilter(&temp);
+				
+				case 2:
+				lowPassFilter(&temp);
+				
+				case 1:
+				lowPassFilter(&temp);
+				break;
+			}			
+			break;
+			
+			case FILTER_HIGH:
+			switch(poles)
+			{
+				case 4:
+				highPassFilter(&temp);
+				
+				case 3:
+				highPassFilter(&temp);
+				
+				case 2:
+				highPassFilter(&temp);
+				
+				case 1:
+				highPassFilter(&temp);
+				break;
+			}
+			break;
+			
+			case FILTER_BAND:
+			break;
+		}*/
+		
+		if(lfoOut[0] != lfoOut[1] && lfoRouteFunction != NULL)
+			lfoRouteFunction();
 		
 		//out = delayLine[delayWriteIndex];
-		delayLine[delayWriteIndex] = *((unsigned char*)(&temp) + 1);
+		/*delayLine[delayWriteIndex] = *((unsigned char*)(&temp) + 1);
 		delayWriteIndex--;
 		if(delayWriteIndex > delayLineTap)
-			delayWriteIndex = delayLineTap;
+			delayWriteIndex = delayLineTap;*/
 		
-		OCR2A = *((unsigned char*)(&temp) + 1);
+		OCR2A = *((unsigned char*)&temp + 1);
 	}
 }
 
@@ -450,6 +492,42 @@ inline void highPassFilter(unsigned long *val)
 	prevInput[0] = temp;
 }
 
+void lfoRouteCents1()
+{
+	bool isNegative = lfoOut[1] < 0;
+	lfoOut[1] *= lfoOut[1] > 0 ? 1 : -1;
+	unsigned short temp = lfoOut[1]*lfoDepth;
+	
+	if(isNegative)
+	{
+		dOsc1CentsShift = -1*(*(((char*)&temp) + 1));
+		lfoOut[1] *= -1;
+	}
+	else
+		dOsc1CentsShift = *(((char*)&temp) + 1);
+	
+	osc1NoteUpdate();
+	osc1CentsUpdate();
+}
+
+void lfoRouteSemis1()
+{
+	bool isNegative = lfoOut[1] < 0;
+	lfoOut[1] *= lfoOut[1] > 0 ? 1 : -1;
+	unsigned short temp = lfoOut[1]*lfoDepth;
+	
+	if(isNegative)
+	{
+		dOsc1SemisShift = -1*(*(((char*)&temp) + 1));
+		lfoOut[1] *= -1;
+	}
+	else
+		dOsc1SemisShift = *(((char*)&temp) + 1);
+		
+	osc1NoteUpdate();
+	osc1CentsUpdate();
+}
+
 //Fixed Lib
 inline void toFixed(int a, unsigned long &b)
 {
@@ -473,8 +551,6 @@ inline void toFixed(double a, unsigned long &b)
 	exponent = (unsigned char)(*(doubleingPointer + 3) & 0x7F);
 	exponent = exponent << 1;
 	exponent |= (unsigned char)((*(doubleingPointer + 2) & 0x80) >> 7);
-	
-	unsigned char sign = (unsigned char)(*(doubleingPointer + 3) & 0x80);
 	
 	b = fraction | 0x10000;
 	
@@ -535,8 +611,6 @@ inline void toFixed(double a, volatile unsigned long &b)
 	exponent = exponent << 1;
 	exponent |= (unsigned char)((*(doubleingPointer + 2) & 0x80) >> 7);
 	
-	unsigned char sign = (unsigned char)(*(doubleingPointer + 3) & 0x80);
-	
 	b = fraction | 0x10000;
 	
 	if(exponent < 127)
@@ -578,8 +652,6 @@ inline void toFixed(double a, volatile unsigned short &b)
 	exponent = (unsigned char)(*(doubleingPointer + 3) & 0x7F);
 	exponent = exponent << 1;
 	exponent |= (unsigned char)((*(doubleingPointer + 2) & 0x80) >> 7);
-	
-	unsigned char sign = (unsigned char)(*(doubleingPointer + 3) & 0x80);
 	
 	temp = fraction | 0x10000;
 	
@@ -678,7 +750,8 @@ inline unsigned long fixedSub(double lhs, unsigned long &rhs)
 
 inline unsigned long fixedMultiply(unsigned long &lhs, unsigned long &rhs)
 {
-	unsigned long long temp = lhs;
+	unsigned long long temp = 0;
+	temp = lhs;
 	temp *= rhs;
 	
 	return (unsigned long)(temp >> 16);
