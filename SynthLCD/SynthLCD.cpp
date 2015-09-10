@@ -69,6 +69,9 @@
 #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
 #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
 
+#define DISABLE_TIMER()	cbi(TIMSK2, TOIE2);
+#define ENABLE_TIMER()	sbi(TIMSK2, TOIE2);
+
 typedef unsigned short _8s8;
 typedef unsigned long _16s16;
 
@@ -84,7 +87,7 @@ unsigned char commandCount = 0;
 unsigned char osc1Note = 48;
 unsigned long osc1Freq = 0;
 unsigned long osc1Phaccu[3] = {0};
-unsigned long osc1TWord = 0;
+unsigned volatile long osc1TWord = 0;
 short osc1CentsShift = 0;
 char dOsc1CentsShift = 0;
 char osc1SemisShift = 0;
@@ -92,14 +95,14 @@ char dOsc1SemisShift = 0;
 char osc1OctaveShift = 0;
 char dOsc1OctaveShift = 0;
 char osc1PhaseShift = 0;
-unsigned char osc1Weight = 0;
+unsigned char osc1Weight = 127;
 unsigned short osc1Out[3] = {0};
 bool osc1NoteSync = false;
 
 unsigned long osc2Freq = 0;
 unsigned long osc2Phaccu = 0;
-unsigned long osc2TWord = 0;
-short osc2CentsShift = 10;
+unsigned volatile long osc2TWord = 0;
+short osc2CentsShift = 1;
 char dOsc2CentsShift = 0;
 char osc2SemisShift = 0;
 char dOsc2SemisShift = 0;
@@ -109,14 +112,14 @@ char osc2PhaseShift = 0;
 char dOsc2PhaseShift = 0;
 unsigned char osc2Weight = 128;
 unsigned short osc2Out[3] = {0};
-bool osc2Sync = true;
+bool osc2Sync = false;
 unsigned char osc2Note = 48;
 bool osc2Busy = false;
 
 bool duoMode = true;
 bool ringMod = false;
 
-unsigned long lfoTWord = 0;
+unsigned volatile long lfoTWord = 0;
 unsigned long lfoPhaccu = 0;
 unsigned short lfoOut[2] = {0};
 unsigned long lfoFreq = 0;
@@ -126,6 +129,7 @@ unsigned char lfoPrintFreq = 0;
 unsigned char lfoDepth = 255;
 char lfoDelta = 0;
 bool lfoNoteSync = false;
+
 FunctionPointer lfoRouteFunction = NULL;
 
 unsigned long centsConst;
@@ -133,7 +137,6 @@ unsigned long stepConst;
 unsigned long refclk;
 unsigned long reftime;
 
-unsigned char alpha = 0;
 unsigned char resMix = 0;
 unsigned short prevOutput[4] = {0};
 unsigned short prevInput[4] = {0};
@@ -144,12 +147,8 @@ char keyArray[16] = {0};
 char keyArrayWrite = 0;
 char keyArrayRead = 0;
 
-unsigned char delayLine[256];
-unsigned char delayLineTap = 10;
-unsigned char delayWriteIndex = delayLineTap;
-
 unsigned char osc1WaveForm = WAVE_LSAW;
-unsigned char osc2WaveForm = WAVE_RSAW;
+unsigned char osc2WaveForm = WAVE_LSAW;
 
 unsigned char filterMode = FILTER_LOW;
 unsigned char filterCutoff = 255;
@@ -195,11 +194,9 @@ void btnInit(void);
 void setup(void);
 
 inline void noteUpdate(void);
+
 inline void osc1NoteUpdate();
 inline void osc1CentsUpdate();
-
-inline void osc2NoteUpdate();
-inline void osc2CentsUpdate();
 
 inline void osc2NoteUpdate();
 inline void osc2CentsUpdate();
@@ -207,10 +204,6 @@ inline void osc2CentsUpdate();
 int main(void)
 {
 	setup();
-
-	char buf[100];
-
-	putString("HELLO WORLD\r\n\r\n");
 
 	while(1)
 	{
@@ -256,29 +249,21 @@ void setup()
 	toFixed(880, osc2Freq);
 	osc2TWord = fixedMultiply(osc2Freq, stepConst);
 	
-	toFixed(0.1, lfoFreq);
-	lfoTWord = fixedMultiply(lfoFreq, stepConst);
-	
-	char buf[100];
+	toFixed(0.5, lfoFreq);
+	lfoTWord = fixedMultiply(lfoFreq, stepConst);	
 	
 	adcInit();
 	serialInit();
 	oscInit();
-	btnInit();
+	
+	noteUpdate();
 	
 	sbi(OSC_OUT_DIR, OSC_OUT_PIN);
-		
-	putString("ADC Setup\r\n");
+	
 	sbi (TIMSK2,TOIE2);
 	sei();
 
-	//lfoRouteFunction = lfoRouteCents1;
-
-	noteUpdate();
-}
-
-void btnInit()
-{
+	lfoRouteFunction = lfoRouteCents2;
 }
 
 void adcInit()
@@ -308,8 +293,8 @@ inline void osc1NoteUpdate()
 	if(osc1Note + (osc1SemisShift + dOsc1SemisShift) + (osc1OctaveShift*12)  < 0)
 	{
 		cli();
-		osc1TWord = keyFreq[0];
-		sei();		
+		osc1TWord = keyFreq[0];	
+		sei();
 	}
 	else if(osc1Note + (osc1SemisShift + dOsc1SemisShift) + (osc1OctaveShift*12) > 87)
 	{
@@ -321,7 +306,7 @@ inline void osc1NoteUpdate()
 	{
 		cli();
 		osc1TWord = keyFreq[osc1Note + (osc1SemisShift + dOsc1SemisShift) + (osc1OctaveShift*12)];
-		sei();		
+		sei();
 	}
 }
 
@@ -332,7 +317,7 @@ inline void osc1CentsUpdate()
 	cli();
 	cents1Coef *= osc1TWord;
 	cents1Coef = ((long)cents1Coef) >> 16;
-	osc1TWord += cents1Coef; 
+	osc1TWord += cents1Coef;
 	sei();
 }
 
@@ -371,9 +356,9 @@ inline void osc2CentsUpdate()
 
 void noteUpdate()
 {
-	cli();
-	lfoTWord = fixedMultiply(lfoFreq, stepConst);
 	sei();
+	lfoTWord = fixedMultiply(lfoFreq, stepConst);
+	cli();
 	
 	osc1NoteUpdate();
 	osc1CentsUpdate();
@@ -395,7 +380,6 @@ inline void lfsrUpdate()
 
 ISR(ADC_vect)
 {
-	putString("ADC Updated\r\n");
 	adcValue[adcSelect] = ADC;
 
 	adcSelect++;
@@ -407,23 +391,23 @@ ISR(ADC_vect)
 }
 
 ISR(TIMER2_OVF_vect)
-{
+{	
 	if(notePlaying)
 	{
+		lfsrUpdate();
+		
 		osc1Phaccu[0] = osc1Phaccu[1];
 		osc1Phaccu[1] = osc1Phaccu[2];
 		osc1Phaccu[2] += osc1TWord;
 
-		osc2Phaccu += osc2TWord;
-		
-		lfsrUpdate();
-
 		osc1Out[0] = osc1Out[1];
 		osc1Out[1] = osc1Out[2];
 		osc1Out[2] = pgm_read_byte(analogWaveTable + waveformOffset[osc1WaveForm] + (unsigned char)(*((unsigned char*)(&osc1Phaccu[2]) + 2) + osc1PhaseShift));
-		
+	
 		if(osc1WaveForm == WAVE_NOISE)
-		osc1Out[2] = lfsrState;
+			osc1Out[2] = lfsrState;
+		
+		osc2Phaccu += osc2TWord;
 
 		if(osc2Sync &&  (unsigned char)(*((unsigned char*)(&osc1Phaccu[1]) + 2)) <  (unsigned char)(*((unsigned char*)(&osc1Phaccu[0]) + 2)) &&  (unsigned char)(*((unsigned char*)(&osc1Phaccu[1]) + 2)) < (unsigned char)(*((unsigned char*)(&osc1Phaccu[2]) + 2)))
 		{
@@ -499,12 +483,6 @@ ISR(TIMER2_OVF_vect)
 		if(lfoOut[0] != lfoOut[1] && lfoRouteFunction != NULL)
 			lfoRouteFunction();
 		
-		//out = delayLine[delayWriteIndex];
-		/*delayLine[delayWriteIndex] = *((unsigned char*)(&temp) + 1);
-		delayWriteIndex--;
-		if(delayWriteIndex > delayLineTap)
-			delayWriteIndex = delayLineTap;*/
-		
 		OCR2A = *((unsigned char*)&temp + 1);
 	}
 }
@@ -566,6 +544,42 @@ void lfoRouteSemis1()
 		
 	osc1NoteUpdate();
 	osc1CentsUpdate();
+}
+
+void lfoRouteCents2()
+{
+	bool isNegative = lfoOut[1] < 0;
+	lfoOut[1] *= lfoOut[1] > 0 ? 1 : -1;
+	unsigned short temp = lfoOut[1]*lfoDepth;
+	
+	if(isNegative)
+	{
+		dOsc2CentsShift = -1*(*(((char*)&temp) + 1));
+		lfoOut[1] *= -1;
+	}
+	else
+		dOsc2CentsShift = *(((char*)&temp) + 1);
+	
+	osc2NoteUpdate();
+	osc2CentsUpdate();
+}
+
+void lfoRouteSemis2()
+{
+	bool isNegative = lfoOut[1] < 0;
+	lfoOut[1] *= lfoOut[1] > 0 ? 1 : -1;
+	unsigned short temp = lfoOut[1]*lfoDepth;
+	
+	if(isNegative)
+	{
+		dOsc2SemisShift = -1*(*(((char*)&temp) + 1));
+		lfoOut[1] *= -1;
+	}
+	else
+		dOsc2SemisShift = *(((char*)&temp) + 1);
+	
+	osc2NoteUpdate();
+	osc2CentsUpdate();
 }
 
 //Fixed Lib
