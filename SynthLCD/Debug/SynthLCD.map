@@ -10,6 +10,8 @@ c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-t
                               serialLib.o (__do_clear_bss)
 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_muluhisi3.o)
                               c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_mulsi3.o) (__muluhisi3)
+c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_mulshisi3.o)
+                              SynthLCD.o (__mulshisi3)
 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_muldi3.o)
                               SynthLCD.o (__muldi3)
 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_muldi3_6.o)
@@ -99,11 +101,12 @@ Discarded input sections
                 0x00000000      0x194 SynthLCD.o
  .text._Z14lfoRouteSemis1v
                 0x00000000      0x190 SynthLCD.o
+ .text._Z14lfoRouteCents2v
+                0x00000000      0x194 SynthLCD.o
  .text._Z14lfoRouteSemis2v
                 0x00000000      0x190 SynthLCD.o
- .data.poles    0x00000000        0x1 SynthLCD.o
- .data.filterCutoff
-                0x00000000        0x1 SynthLCD.o
+ .text._Z15lfoRouteOc2Syncv
+                0x00000000        0x2 SynthLCD.o
  .bss.filterMode
                 0x00000000        0x1 SynthLCD.o
  .bss.keyArrayRead
@@ -114,8 +117,6 @@ Discarded input sections
  .data.playThisNote
                 0x00000000        0x1 SynthLCD.o
  .bss.prevInput
-                0x00000000        0x8 SynthLCD.o
- .bss.prevOutput
                 0x00000000        0x8 SynthLCD.o
  .bss.resMix    0x00000000        0x1 SynthLCD.o
  .bss.centsConst
@@ -229,6 +230,20 @@ Discarded input sections
                 0x00000000        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_muluhisi3.o)
  .text.libgcc.fixed
                 0x00000000        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_muluhisi3.o)
+ .text          0x00000000        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_mulshisi3.o)
+ .data          0x00000000        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_mulshisi3.o)
+ .bss           0x00000000        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_mulshisi3.o)
+ .text.libgcc.div
+                0x00000000        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_mulshisi3.o)
+ .text.libgcc   0x00000000        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_mulshisi3.o)
+ .text.libgcc.prologue
+                0x00000000        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_mulshisi3.o)
+ .text.libgcc.builtins
+                0x00000000        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_mulshisi3.o)
+ .text.libgcc.fmul
+                0x00000000        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_mulshisi3.o)
+ .text.libgcc.fixed
+                0x00000000        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_mulshisi3.o)
  .text          0x00000000        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_muldi3.o)
  .data          0x00000000        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_muldi3.o)
  .bss           0x00000000        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_muldi3.o)
@@ -461,7 +476,7 @@ END GROUP
 .rela.plt
  *(.rela.plt)
 
-.text           0x00000000     0x1448
+.text           0x00000000     0x14c4
  *(.vectors)
  .vectors       0x00000000       0x68 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5/crtm328p.o
                 0x00000000                __vector_default
@@ -553,60 +568,64 @@ END GROUP
  .text.__vector_18
                 0x00000722       0x86 serialLib.o
                 0x00000722                __vector_18
- .text._Z14lfoRouteCents2v
-                0x000007a8      0x194 SynthLCD.o
-                0x000007a8                _Z14lfoRouteCents2v
+ .text._Z20lfoRouteFilterCutoffv
+                0x000007a8       0x5a SynthLCD.o
+                0x000007a8                _Z20lfoRouteFilterCutoffv
  .text._Z5setupv
-                0x0000093c      0x524 SynthLCD.o
-                0x0000093c                _Z5setupv
+                0x00000802      0x524 SynthLCD.o
+                0x00000802                _Z5setupv
  .text.startup.main
-                0x00000e60        0x6 SynthLCD.o
-                0x00000e60                main
+                0x00000d26        0x6 SynthLCD.o
+                0x00000d26                main
  .text.__vector_21
-                0x00000e66       0x5a SynthLCD.o
-                0x00000e66                __vector_21
+                0x00000d2c       0x5a SynthLCD.o
+                0x00000d2c                __vector_21
  .text.__vector_9
-                0x00000ec0      0x2fc SynthLCD.o
-                0x00000ec0                __vector_9
+                0x00000d86      0x4a2 SynthLCD.o
+                0x00000d86                __vector_9
  .text.libgcc.mul
-                0x000011bc       0x20 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_mulsi3.o)
-                0x000011bc                __mulsi3
+                0x00001228       0x20 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_mulsi3.o)
+                0x00001228                __mulsi3
  .text.libgcc.mul
-                0x000011dc       0x16 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_muluhisi3.o)
-                0x000011dc                __muluhisi3
+                0x00001248       0x16 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_muluhisi3.o)
+                0x00001248                __muluhisi3
  .text.libgcc.mul
-                0x000011f2       0xa0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_muldi3.o)
-                0x000011f2                __muldi3
+                0x0000125e       0x10 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_mulshisi3.o)
+                0x0000125e                __mulshisi3
+                0x00001264                __mulohisi3
  .text.libgcc.mul
-                0x00001292       0x12 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_muldi3_6.o)
-                0x00001292                __muldi3_6
+                0x0000126e       0xa0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_muldi3.o)
+                0x0000126e                __muldi3
  .text.libgcc.mul
-                0x000012a4       0x56 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_umulsidi3.o)
-                0x000012a4                __umulsidi3
-                0x000012a6                __umulsidi3_helper
+                0x0000130e       0x12 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_muldi3_6.o)
+                0x0000130e                __muldi3_6
+ .text.libgcc.mul
+                0x00001320       0x56 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_umulsidi3.o)
+                0x00001320                __umulsidi3
+                0x00001322                __umulsidi3_helper
  .text.libgcc.div
-                0x000012fa       0x1c c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivdi3.o)
-                0x000012fa                __umoddi3
-                0x000012fe                __udivdi3
-                0x00001300                __udivdi3_umoddi3
+                0x00001376       0x1c c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivdi3.o)
+                0x00001376                __umoddi3
+                0x0000137a                __udivdi3
+                0x0000137c                __udivdi3_umoddi3
  .text.libgcc.div
-                0x00001316       0xa2 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmod64.o)
-                0x00001316                __udivmod64
+                0x00001392       0xa2 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_udivmod64.o)
+                0x00001392                __udivmod64
  .text.libgcc.builtins
-                0x000013b8       0x32 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_ashldi3.o)
-                0x000013b8                __ashldi3
+                0x00001434       0x32 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_ashldi3.o)
+                0x00001434                __ashldi3
  .text.libgcc.builtins
-                0x000013ea       0x3c c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_ashrdi3.o)
-                0x000013ea                __ashrdi3
-                0x000013ee                __lshrdi3
+                0x00001466       0x3c c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_ashrdi3.o)
+                0x00001466                __ashrdi3
+                0x0000146a                __lshrdi3
  .text.libgcc.mul
-                0x00001426       0x1e c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_umulhisi3.o)
-                0x00001426                __umulhisi3
-                0x00001444                . = ALIGN (0x2)
+                0x000014a2       0x1e c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_umulhisi3.o)
+                0x000014a2                __umulhisi3
+                0x000014c0                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x00001444        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_exit.o)
-                0x00001444                _exit
-                0x00001444                exit
+ .fini9         0x000014c0        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_exit.o)
+                0x000014c0                _exit
+                0x000014c0                exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -625,172 +644,183 @@ END GROUP
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x00001444        0x4 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_exit.o)
+ .fini0         0x000014c0        0x4 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_exit.o)
  *(.fini0)
-                0x00001448                _etext = .
+                0x000014c4                _etext = .
 
-.data           0x00800100      0x17a load address 0x00001448
+.data           0x00800100      0x17c load address 0x000014c4
                 0x00800100                PROVIDE (__data_start, .)
  *(.data)
  *(.data*)
  .data.lfsrState
                 0x00800100        0x2 SynthLCD.o
                 0x00800100                lfsrState
- .data.osc2WaveForm
-                0x00800102        0x1 SynthLCD.o
-                0x00800102                osc2WaveForm
- .data.osc1WaveForm
+ .data.poles    0x00800102        0x1 SynthLCD.o
+                0x00800102                poles
+ .data.filterCutoff
                 0x00800103        0x1 SynthLCD.o
-                0x00800103                osc1WaveForm
- .data.notePlaying
+                0x00800103                filterCutoff
+ .data.osc2WaveForm
                 0x00800104        0x1 SynthLCD.o
-                0x00800104                notePlaying
- .data.lfoDepth
+                0x00800104                osc2WaveForm
+ .data.osc1WaveForm
                 0x00800105        0x1 SynthLCD.o
-                0x00800105                lfoDepth
- .data.osc2Note
+                0x00800105                osc1WaveForm
+ .data.notePlaying
                 0x00800106        0x1 SynthLCD.o
-                0x00800106                osc2Note
- .data.osc2Weight
+                0x00800106                notePlaying
+ .data.lfoDepth
                 0x00800107        0x1 SynthLCD.o
-                0x00800107                osc2Weight
+                0x00800107                lfoDepth
+ .data.osc2Note
+                0x00800108        0x1 SynthLCD.o
+                0x00800108                osc2Note
+ .data.osc2Weight
+                0x00800109        0x1 SynthLCD.o
+                0x00800109                osc2Weight
  .data.osc2CentsShift
-                0x00800108        0x2 SynthLCD.o
-                0x00800108                osc2CentsShift
+                0x0080010a        0x2 SynthLCD.o
+                0x0080010a                osc2CentsShift
  .data.osc1Weight
-                0x0080010a        0x1 SynthLCD.o
-                0x0080010a                osc1Weight
+                0x0080010c        0x1 SynthLCD.o
+                0x0080010c                osc1Weight
  .data.osc1Note
-                0x0080010b        0x1 SynthLCD.o
-                0x0080010b                osc1Note
+                0x0080010d        0x1 SynthLCD.o
+                0x0080010d                osc1Note
  *(.rodata)
  *(.rodata*)
  .rodata._ZL7keyFreq
-                0x0080010c      0x160 SynthLCD.o
+                0x0080010e      0x160 SynthLCD.o
  .rodata._ZL14waveformOffset
-                0x0080026c        0xe SynthLCD.o
+                0x0080026e        0xe SynthLCD.o
  *(.gnu.linkonce.d*)
-                0x0080027a                . = ALIGN (0x2)
-                0x0080027a                _edata = .
-                0x0080027a                PROVIDE (__data_end, .)
+                0x0080027c                . = ALIGN (0x2)
+                0x0080027c                _edata = .
+                0x0080027c                PROVIDE (__data_end, .)
 
-.bss            0x0080027a      0x26c
-                0x0080027a                PROVIDE (__bss_start, .)
+.bss            0x0080027c      0x275
+                0x0080027c                PROVIDE (__bss_start, .)
  *(.bss)
  *(.bss*)
- .bss.rxEvent   0x0080027a        0x2 serialLib.o
-                0x0080027a                rxEvent
+ .bss.rxEvent   0x0080027c        0x2 serialLib.o
+                0x0080027c                rxEvent
  .bss.rxMessagesRemaining
-                0x0080027c        0x2 serialLib.o
-                0x0080027c                rxMessagesRemaining
- .bss.rxBufferWriteIndex
                 0x0080027e        0x2 serialLib.o
-                0x0080027e                rxBufferWriteIndex
- .bss.rxBuffer  0x00800280      0x100 serialLib.o
-                0x00800280                rxBuffer
+                0x0080027e                rxMessagesRemaining
+ .bss.rxBufferWriteIndex
+                0x00800280        0x2 serialLib.o
+                0x00800280                rxBufferWriteIndex
+ .bss.rxBuffer  0x00800282      0x100 serialLib.o
+                0x00800282                rxBuffer
  .bss.txMessagesRemaining
-                0x00800380        0x2 serialLib.o
-                0x00800380                txMessagesRemaining
- .bss.txBufferReadIndex
                 0x00800382        0x2 serialLib.o
-                0x00800382                txBufferReadIndex
- .bss.txBuffer  0x00800384      0x100 serialLib.o
-                0x00800384                txBuffer
- .bss.reftime   0x00800484        0x4 SynthLCD.o
-                0x00800484                reftime
- .bss.refclk    0x00800488        0x4 SynthLCD.o
-                0x00800488                refclk
+                0x00800382                txMessagesRemaining
+ .bss.txBufferReadIndex
+                0x00800384        0x2 serialLib.o
+                0x00800384                txBufferReadIndex
+ .bss.txBuffer  0x00800386      0x100 serialLib.o
+                0x00800386                txBuffer
+ .bss.dFilterCutoff
+                0x00800486        0x1 SynthLCD.o
+                0x00800486                dFilterCutoff
+ .bss.prevOutput
+                0x00800487        0x8 SynthLCD.o
+                0x00800487                prevOutput
+ .bss.reftime   0x0080048f        0x4 SynthLCD.o
+                0x0080048f                reftime
+ .bss.refclk    0x00800493        0x4 SynthLCD.o
+                0x00800493                refclk
  .bss.stepConst
-                0x0080048c        0x4 SynthLCD.o
-                0x0080048c                stepConst
+                0x00800497        0x4 SynthLCD.o
+                0x00800497                stepConst
  .bss.lfoRouteFunction
-                0x00800490        0x2 SynthLCD.o
-                0x00800490                lfoRouteFunction
+                0x0080049b        0x2 SynthLCD.o
+                0x0080049b                lfoRouteFunction
  .bss.lfoWaveForm
-                0x00800492        0x1 SynthLCD.o
-                0x00800492                lfoWaveForm
- .bss.lfoFreq   0x00800493        0x4 SynthLCD.o
-                0x00800493                lfoFreq
- .bss.lfoOut    0x00800497        0x4 SynthLCD.o
-                0x00800497                lfoOut
+                0x0080049d        0x1 SynthLCD.o
+                0x0080049d                lfoWaveForm
+ .bss.lfoFreq   0x0080049e        0x4 SynthLCD.o
+                0x0080049e                lfoFreq
+ .bss.lfoOut    0x008004a2        0x4 SynthLCD.o
+                0x008004a2                lfoOut
  .bss.lfoPhaccu
-                0x0080049b        0x4 SynthLCD.o
-                0x0080049b                lfoPhaccu
- .bss.lfoTWord  0x0080049f        0x4 SynthLCD.o
-                0x0080049f                lfoTWord
- .bss.ringMod   0x008004a3        0x1 SynthLCD.o
-                0x008004a3                ringMod
- .bss.osc2Sync  0x008004a4        0x1 SynthLCD.o
-                0x008004a4                osc2Sync
- .bss.osc2Out   0x008004a5        0x6 SynthLCD.o
-                0x008004a5                osc2Out
+                0x008004a6        0x4 SynthLCD.o
+                0x008004a6                lfoPhaccu
+ .bss.lfoTWord  0x008004aa        0x4 SynthLCD.o
+                0x008004aa                lfoTWord
+ .bss.ringMod   0x008004ae        0x1 SynthLCD.o
+                0x008004ae                ringMod
+ .bss.osc2Sync  0x008004af        0x1 SynthLCD.o
+                0x008004af                osc2Sync
+ .bss.osc2Out   0x008004b0        0x6 SynthLCD.o
+                0x008004b0                osc2Out
  .bss.osc2PhaseShift
-                0x008004ab        0x1 SynthLCD.o
-                0x008004ab                osc2PhaseShift
+                0x008004b6        0x1 SynthLCD.o
+                0x008004b6                osc2PhaseShift
  .bss.osc2OctaveShift
-                0x008004ac        0x1 SynthLCD.o
-                0x008004ac                osc2OctaveShift
+                0x008004b7        0x1 SynthLCD.o
+                0x008004b7                osc2OctaveShift
  .bss.dOsc2SemisShift
-                0x008004ad        0x1 SynthLCD.o
-                0x008004ad                dOsc2SemisShift
+                0x008004b8        0x1 SynthLCD.o
+                0x008004b8                dOsc2SemisShift
  .bss.osc2SemisShift
-                0x008004ae        0x1 SynthLCD.o
-                0x008004ae                osc2SemisShift
+                0x008004b9        0x1 SynthLCD.o
+                0x008004b9                osc2SemisShift
  .bss.dOsc2CentsShift
-                0x008004af        0x1 SynthLCD.o
-                0x008004af                dOsc2CentsShift
+                0x008004ba        0x1 SynthLCD.o
+                0x008004ba                dOsc2CentsShift
  .bss.osc2TWord
-                0x008004b0        0x4 SynthLCD.o
-                0x008004b0                osc2TWord
+                0x008004bb        0x4 SynthLCD.o
+                0x008004bb                osc2TWord
  .bss.osc2Phaccu
-                0x008004b4        0x4 SynthLCD.o
-                0x008004b4                osc2Phaccu
- .bss.osc2Freq  0x008004b8        0x4 SynthLCD.o
-                0x008004b8                osc2Freq
- .bss.osc1Out   0x008004bc        0x6 SynthLCD.o
-                0x008004bc                osc1Out
+                0x008004bf        0x4 SynthLCD.o
+                0x008004bf                osc2Phaccu
+ .bss.osc2Freq  0x008004c3        0x4 SynthLCD.o
+                0x008004c3                osc2Freq
+ .bss.osc1Out   0x008004c7        0x6 SynthLCD.o
+                0x008004c7                osc1Out
  .bss.osc1PhaseShift
-                0x008004c2        0x1 SynthLCD.o
-                0x008004c2                osc1PhaseShift
+                0x008004cd        0x1 SynthLCD.o
+                0x008004cd                osc1PhaseShift
  .bss.osc1OctaveShift
-                0x008004c3        0x1 SynthLCD.o
-                0x008004c3                osc1OctaveShift
+                0x008004ce        0x1 SynthLCD.o
+                0x008004ce                osc1OctaveShift
  .bss.dOsc1SemisShift
-                0x008004c4        0x1 SynthLCD.o
-                0x008004c4                dOsc1SemisShift
+                0x008004cf        0x1 SynthLCD.o
+                0x008004cf                dOsc1SemisShift
  .bss.osc1SemisShift
-                0x008004c5        0x1 SynthLCD.o
-                0x008004c5                osc1SemisShift
+                0x008004d0        0x1 SynthLCD.o
+                0x008004d0                osc1SemisShift
  .bss.dOsc1CentsShift
-                0x008004c6        0x1 SynthLCD.o
-                0x008004c6                dOsc1CentsShift
+                0x008004d1        0x1 SynthLCD.o
+                0x008004d1                dOsc1CentsShift
  .bss.osc1CentsShift
-                0x008004c7        0x2 SynthLCD.o
-                0x008004c7                osc1CentsShift
+                0x008004d2        0x2 SynthLCD.o
+                0x008004d2                osc1CentsShift
  .bss.osc1TWord
-                0x008004c9        0x4 SynthLCD.o
-                0x008004c9                osc1TWord
+                0x008004d4        0x4 SynthLCD.o
+                0x008004d4                osc1TWord
  .bss.osc1Phaccu
-                0x008004cd        0xc SynthLCD.o
-                0x008004cd                osc1Phaccu
- .bss.osc1Freq  0x008004d9        0x4 SynthLCD.o
-                0x008004d9                osc1Freq
- .bss.adcValue  0x008004dd        0x8 SynthLCD.o
-                0x008004dd                adcValue
+                0x008004d8        0xc SynthLCD.o
+                0x008004d8                osc1Phaccu
+ .bss.osc1Freq  0x008004e4        0x4 SynthLCD.o
+                0x008004e4                osc1Freq
+ .bss.adcValue  0x008004e8        0x8 SynthLCD.o
+                0x008004e8                adcValue
  .bss.adcSelect
-                0x008004e5        0x1 SynthLCD.o
-                0x008004e5                adcSelect
+                0x008004f0        0x1 SynthLCD.o
+                0x008004f0                adcSelect
  *(COMMON)
-                0x008004e6                PROVIDE (__bss_end, .)
-                0x00001448                __data_load_start = LOADADDR (.data)
-                0x000015c2                __data_load_end = (__data_load_start + SIZEOF (.data))
+                0x008004f1                PROVIDE (__bss_end, .)
+                0x000014c4                __data_load_start = LOADADDR (.data)
+                0x00001640                __data_load_end = (__data_load_start + SIZEOF (.data))
 
-.noinit         0x008004e6        0x0
-                0x008004e6                PROVIDE (__noinit_start, .)
+.noinit         0x008004f1        0x0
+                0x008004f1                PROVIDE (__noinit_start, .)
  *(.noinit*)
-                0x008004e6                PROVIDE (__noinit_end, .)
-                0x008004e6                _end = .
-                0x008004e6                PROVIDE (__heap_start, .)
+                0x008004f1                PROVIDE (__noinit_end, .)
+                0x008004f1                _end = .
+                0x008004f1                PROVIDE (__heap_start, .)
 
 .eeprom         0x00810000        0x0
  *(.eeprom*)
@@ -850,47 +880,47 @@ END GROUP
 .debug_sfnames
  *(.debug_sfnames)
 
-.debug_aranges  0x00000000       0xc0
+.debug_aranges  0x00000000       0xd0
  *(.debug_aranges)
  .debug_aranges
                 0x00000000       0x58 serialLib.o
  .debug_aranges
-                0x00000058       0x68 SynthLCD.o
+                0x00000058       0x78 SynthLCD.o
 
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000     0x15a4
+.debug_info     0x00000000     0x16f5
  *(.debug_info .gnu.linkonce.wi.*)
  .debug_info    0x00000000      0x295 serialLib.o
- .debug_info    0x00000295     0x130f SynthLCD.o
+ .debug_info    0x00000295     0x1460 SynthLCD.o
 
-.debug_abbrev   0x00000000      0x466
+.debug_abbrev   0x00000000      0x470
  *(.debug_abbrev)
  .debug_abbrev  0x00000000      0x196 serialLib.o
- .debug_abbrev  0x00000196      0x2d0 SynthLCD.o
+ .debug_abbrev  0x00000196      0x2da SynthLCD.o
 
-.debug_line     0x00000000      0x8e2
+.debug_line     0x00000000      0x937
  *(.debug_line .debug_line.* .debug_line_end)
  .debug_line    0x00000000      0x2ad serialLib.o
- .debug_line    0x000002ad      0x635 SynthLCD.o
+ .debug_line    0x000002ad      0x68a SynthLCD.o
 
-.debug_frame    0x00000000      0x2f4
+.debug_frame    0x00000000      0x320
  *(.debug_frame)
  .debug_frame   0x00000000       0xfc serialLib.o
- .debug_frame   0x000000fc      0x1f8 SynthLCD.o
+ .debug_frame   0x000000fc      0x224 SynthLCD.o
 
-.debug_str      0x00000000     0x8b08
+.debug_str      0x00000000     0x8b84
  *(.debug_str)
- .debug_str     0x00000000     0x5d75 serialLib.o
-                               0x5e25 (size before relaxing)
- .debug_str     0x00005d75     0x2d93 SynthLCD.o
-                               0x8ae9 (size before relaxing)
+ .debug_str     0x00000000     0x5d81 serialLib.o
+                               0x5e31 (size before relaxing)
+ .debug_str     0x00005d81     0x2e03 SynthLCD.o
+                               0x8b65 (size before relaxing)
 
-.debug_loc      0x00000000      0xff3
+.debug_loc      0x00000000     0x109f
  *(.debug_loc)
  .debug_loc     0x00000000      0x163 serialLib.o
- .debug_loc     0x00000163      0xe90 SynthLCD.o
+ .debug_loc     0x00000163      0xf3c SynthLCD.o
 
 .debug_macinfo
  *(.debug_macinfo)
@@ -910,10 +940,10 @@ END GROUP
 .debug_pubtypes
  *(.debug_pubtypes)
 
-.debug_ranges   0x00000000      0x200
+.debug_ranges   0x00000000      0x228
  *(.debug_ranges)
  .debug_ranges  0x00000000       0x48 serialLib.o
- .debug_ranges  0x00000048      0x1b8 SynthLCD.o
+ .debug_ranges  0x00000048      0x1e0 SynthLCD.o
 
 .debug_macro    0x00000000     0x2bdd
  *(.debug_macro)

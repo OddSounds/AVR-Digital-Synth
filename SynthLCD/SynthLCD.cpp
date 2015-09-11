@@ -152,6 +152,7 @@ unsigned char osc2WaveForm = WAVE_LSAW;
 
 unsigned char filterMode = FILTER_LOW;
 unsigned char filterCutoff = 255;
+char dFilterCutoff = 0;
 unsigned char poles = 1;
 
 unsigned short lfsrState = 0xACE1;
@@ -172,6 +173,7 @@ inline void writeLine(unsigned char line, char* str);
 
 void lfoRouteOsc1(void);
 void lfoRouteOsc2(void);
+void lfoRouteOc2Sync(void);
 void lfoRouteCents1(void);
 void lfoRouteCents2(void);
 void lfoRouteSemis1(void);
@@ -180,8 +182,8 @@ void lfoRoutePhase1(void);
 void lfoRoutePhase2(void);
 void lfoRouteWave1(void);
 void lfoRouteWave2(void);
-void lfoRouteCutoff(void);
-void lfoRouteFilterMode(void);
+void lfoRouteFilterCutoff(void);
+void lfoRouteFilterPoles(void);
 
 inline void lowPassFilter(unsigned long *val);
 inline void highPassFilter(unsigned long *val);
@@ -263,7 +265,7 @@ void setup()
 	sbi (TIMSK2,TOIE2);
 	sei();
 
-	lfoRouteFunction = lfoRouteCents2;
+	lfoRouteFunction = lfoRouteFilterCutoff;
 }
 
 void adcInit()
@@ -438,47 +440,25 @@ ISR(TIMER2_OVF_vect)
 			temp += osc2Out[2];
 		}
 		
-		/*switch(filterMode)
+		switch(poles)
 		{
-			case FILTER_LOW:
-			switch(poles)
-			{
-				case 4:
-				lowPassFilter(&temp);
-				
-				case 3:
-				lowPassFilter(&temp);
-				
-				case 2:
-				lowPassFilter(&temp);
-				
-				case 1:
-				lowPassFilter(&temp);
-				break;
-			}			
+			case 0:
+			__asm__("nop"); //Prevent empty case from being optimized out
 			break;
 			
-			case FILTER_HIGH:
-			switch(poles)
-			{
-				case 4:
-				highPassFilter(&temp);
+			case 4:
+			lowPassFilter(&temp);
 				
-				case 3:
-				highPassFilter(&temp);
+			case 3:
+			lowPassFilter(&temp);
 				
-				case 2:
-				highPassFilter(&temp);
+			case 2:
+			lowPassFilter(&temp);
 				
-				case 1:
-				highPassFilter(&temp);
-				break;
-			}
+			case 1:
+			lowPassFilter(&temp);
 			break;
-			
-			case FILTER_BAND:
-			break;
-		}*/
+		}			
 		
 		if(lfoOut[0] != lfoOut[1] && lfoRouteFunction != NULL)
 			lfoRouteFunction();
@@ -489,25 +469,19 @@ ISR(TIMER2_OVF_vect)
 
 inline void lowPassFilter(unsigned long *val)
 {
+	short temp = filterCutoff;
+	temp += dFilterCutoff;
+	if(temp > 255)
+		temp = 255;
+	else if(temp < 0)
+		temp = 0;
+	
 	*val = (*val - prevOutput[0]);
-	*val = (*val*filterCutoff);
+	*val = (*val*((unsigned char)temp));
 	
 	*val = *((unsigned short*)((unsigned char*)val + 1)) + prevOutput[0];
 	
 	prevOutput[0] = *val;
-}
-
-inline void highPassFilter(unsigned long *val)
-{
-	unsigned long temp = *val;
-	
-	*val = (prevOutput[0] + *val - prevInput[0]);
-	*val = (*val*filterCutoff);
-	
-	*val = *((unsigned short*)((unsigned char*)val + 1));
-	
-	prevOutput[0] = *val;
-	prevInput[0] = temp;
 }
 
 void lfoRouteCents1()
@@ -580,6 +554,33 @@ void lfoRouteSemis2()
 	
 	osc2NoteUpdate();
 	osc2CentsUpdate();
+}
+
+void lfoRouteOc2Sync()
+{
+	if(lfoOut[1] < 0)
+	{
+		
+	}
+	else
+	{
+		
+	}
+}
+
+void lfoRouteFilterCutoff()
+{
+	bool isNegative = lfoOut[1] < 0;
+	lfoOut[1] *= lfoOut[1] > 0 ? 1 : -1;
+	unsigned short temp = lfoOut[1]*lfoDepth;
+	
+	if(isNegative)
+	{
+		dFilterCutoff = -1*(*(((char*)&temp) + 1));
+		lfoOut[1] *= -1;
+	}
+	else
+		dFilterCutoff = *(((char*)&temp) + 1);	
 }
 
 //Fixed Lib
