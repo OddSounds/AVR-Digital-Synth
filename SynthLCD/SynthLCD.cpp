@@ -84,9 +84,10 @@ bool updateADC[4] = {false};
 unsigned char commandBytes[3];
 unsigned char commandCount = 0;
 
-unsigned char osc1Note = 48;
+unsigned char osc1Note = 36;
 unsigned long osc1Freq = 0;
-unsigned long osc1Phaccu[3] = {0};
+unsigned char osc1PhaccuShort[3] = {0};
+unsigned long osc1Phaccu = 0;
 unsigned volatile long osc1TWord = 0;
 short osc1CentsShift = 0;
 char dOsc1CentsShift = 0;
@@ -95,14 +96,14 @@ char dOsc1SemisShift = 0;
 char osc1OctaveShift = 0;
 char dOsc1OctaveShift = 0;
 char osc1PhaseShift = 0;
-unsigned char osc1Weight = 127;
-unsigned short osc1Out[3] = {0};
+unsigned char osc1Weight = 125;
+short osc1Out[3] = {0};
 bool osc1NoteSync = false;
 
 unsigned long osc2Freq = 0;
 unsigned long osc2Phaccu = 0;
 unsigned volatile long osc2TWord = 0;
-short osc2CentsShift = 1;
+short osc2CentsShift = 0;
 char dOsc2CentsShift = 0;
 char osc2SemisShift = 0;
 char dOsc2SemisShift = 0;
@@ -110,10 +111,10 @@ char osc2OctaveShift = 0;
 char dOsc2OctaveShift = 0;
 char osc2PhaseShift = 0;
 char dOsc2PhaseShift = 0;
-unsigned char osc2Weight = 128;
-unsigned short osc2Out[3] = {0};
+unsigned char osc2Weight = 125;
+short osc2Out[3] = {0};
 bool osc2Sync = false;
-unsigned char osc2Note = 48;
+unsigned char osc2Note = 36;
 bool osc2Busy = false;
 
 bool duoMode = true;
@@ -138,11 +139,11 @@ unsigned long refclk;
 unsigned long reftime;
 
 unsigned char resMix = 0;
-unsigned short prevOutput[4] = {0};
+short prevOutput[4] = {0};
 unsigned short prevInput[4] = {0};
 
 bool notePlaying = true;
-unsigned char playThisNote = 48;
+unsigned char playThisNote = 24;
 char keyArray[16] = {0};
 char keyArrayWrite = 0;
 char keyArrayRead = 0;
@@ -152,9 +153,18 @@ unsigned char osc2WaveForm = WAVE_LSAW;
 
 unsigned char filterMode = FILTER_LOW;
 unsigned char filterCutoff = 255;
-unsigned char poles = 1;
+unsigned char poles = 0;
 
-unsigned short lfsrState = 0xACE1;
+short lfsrState = 0xACE1;
+
+unsigned short clock_32k = 0;
+unsigned long envelopeGain = 0;
+
+unsigned char attackRate = 0;
+unsigned char decayRate = 0;
+unsigned char sustainLevel = 255;
+unsigned char releaseRate = 0;
+unsigned char envelopPhase = ATTACK_SLOPE;
 
 //Function defs
 void adcInit(void);
@@ -183,7 +193,7 @@ void lfoRouteWave2(void);
 void lfoRouteCutoff(void);
 void lfoRouteFilterMode(void);
 
-inline void lowPassFilter(unsigned long *val);
+inline void lowPassFilter(unsigned char *val);
 inline void highPassFilter(unsigned long *val);
 
 void uartInit(void);
@@ -207,7 +217,7 @@ int main(void)
 
 	while(1)
 	{
-		/*for(int i = 0; i < 4; i++)
+		for(int i = 0; i < 4; i++)
 		{			
 			adcValue[i] = ADC;
 			ADMUX = i;
@@ -218,7 +228,13 @@ int main(void)
 			while(ADCSRA & (1 << ADSC));
 		}		
 		
-		_delay_ms(1);
+		osc1PhaseShift++;
+		_delay_ms(50);
+		
+		osc1WaveForm = adcValue[1] >> 8;
+		osc2WaveForm = adcValue[2] >> 8;
+		
+		/*_delay_ms(1);
 		filterCutoff = adcValue[0] >> 2;
 		
 		itoa(adcValue[0], buf, 10);
@@ -242,14 +258,8 @@ void setup()
 	toFixed(31372.550, refclk);
 	reftime = fixedDivide(1, refclk);
 	stepConst = fixedDivide(256, refclk);
-
-	toFixed(880, osc1Freq);
-	osc1TWord = fixedMultiply(osc1Freq, stepConst);
-
-	toFixed(880, osc2Freq);
-	osc2TWord = fixedMultiply(osc2Freq, stepConst);
 	
-	toFixed(0.5, lfoFreq);
+	toFixed(0.05, lfoFreq);
 	lfoTWord = fixedMultiply(lfoFreq, stepConst);	
 	
 	adcInit();
@@ -263,7 +273,7 @@ void setup()
 	sbi (TIMSK2,TOIE2);
 	sei();
 
-	lfoRouteFunction = lfoRouteCents2;
+	//lfoRouteFunction = lfoRouteCents2;
 }
 
 void adcInit()
@@ -391,42 +401,53 @@ ISR(ADC_vect)
 }
 
 ISR(TIMER2_OVF_vect)
-{	
+{		
 	if(notePlaying)
 	{
 		lfsrUpdate();
+		clock_32k++;
 		
-		osc1Phaccu[0] = osc1Phaccu[1];
-		osc1Phaccu[1] = osc1Phaccu[2];
-		osc1Phaccu[2] += osc1TWord;
+		if(clock_32k > 32000)
+			clock_32k = 0;
+		
+		osc1Phaccu += osc1TWord;
+		
+		osc1PhaccuShort[0] = osc1PhaccuShort[1];
+		osc1PhaccuShort[1] = osc1PhaccuShort[2];
+		osc1PhaccuShort[2] = (unsigned char)*((unsigned char*)(&osc1Phaccu) + 2);
 
-		osc1Out[0] = osc1Out[1];
-		osc1Out[1] = osc1Out[2];
-		osc1Out[2] = pgm_read_byte(analogWaveTable + waveformOffset[osc1WaveForm] + (unsigned char)(*((unsigned char*)(&osc1Phaccu[2]) + 2) + osc1PhaseShift));
+		osc1Out[2] = (short)pgm_read_byte(analogWaveTable + waveformOffset[osc1WaveForm] + (unsigned char)(osc1PhaccuShort[2] + osc1PhaseShift));
+	
+		if(osc1Out[2] & 0x80)
+			*((char*)(&osc1Out[2]) + 1) = 0xFF;
 	
 		if(osc1WaveForm == WAVE_NOISE)
 			osc1Out[2] = lfsrState;
 		
 		osc2Phaccu += osc2TWord;
 
-		if(osc2Sync &&  (unsigned char)(*((unsigned char*)(&osc1Phaccu[1]) + 2)) <  (unsigned char)(*((unsigned char*)(&osc1Phaccu[0]) + 2)) &&  (unsigned char)(*((unsigned char*)(&osc1Phaccu[1]) + 2)) < (unsigned char)(*((unsigned char*)(&osc1Phaccu[2]) + 2)))
+		if(osc2Sync && osc1PhaccuShort[1] < osc1PhaccuShort[0] &&  osc1PhaccuShort[1] < osc1PhaccuShort[2])
 		{
-			osc2Phaccu = osc1Phaccu[2];
+			osc2Phaccu = osc1Phaccu;
 		}
 
 		if(osc2WaveForm != WAVE_NOISE)
-			osc2Out[2] = pgm_read_byte(analogWaveTable + waveformOffset[osc2WaveForm] + (unsigned char)*((unsigned char*)(&osc2Phaccu)+2) + osc2PhaseShift);
+			osc2Out[2] = (short)pgm_read_byte(analogWaveTable + waveformOffset[osc2WaveForm] + (unsigned char)*((unsigned char*)(&osc2Phaccu)+2) + osc2PhaseShift);
 		else
 			osc2Out[2] = lfsrState;
 
-		lfoPhaccu += lfoTWord;
+		if(osc2Out[2] & 0x80)
+			*((char*)(&osc2Out[2]) + 1) = 0xFF;
+
+		/*lfoPhaccu += lfoTWord;
 		
 		lfoOut[0] = lfoOut[1];
 		lfoOut[1] = pgm_read_byte(analogWaveTable + waveformOffset[lfoWaveForm] + (unsigned char)*((unsigned char*)(&lfoPhaccu)+2));
-		lfoOut[1] -= 128;
+		lfoOut[1] -= 128;*/
 
-		unsigned long temp = 0;
-	
+		long temp = 0;
+		unsigned char output = 0;
+		
 		osc1Out[2] *= osc1Weight;
 		osc2Out[2] *= osc2Weight;
 
@@ -436,65 +457,98 @@ ISR(TIMER2_OVF_vect)
 		{
 			temp = osc1Out[2];
 			temp += osc2Out[2];
+			
+			temp += 0x8000;
+		
+			if(temp > 0xFF00)
+				temp = 0xFF00;
+		
+			if(temp < 0)
+				temp = 0;			
 		}
 		
-		/*switch(filterMode)
+		if(envelopPhase == ATTACK_SLOPE)
 		{
-			case FILTER_LOW:
-			switch(poles)
+			if(attackRate > 0)
 			{
-				case 4:
-				lowPassFilter(&temp);
+				envelopeGain += attackRate;
 				
-				case 3:
-				lowPassFilter(&temp);
-				
-				case 2:
-				lowPassFilter(&temp);
-				
-				case 1:
-				lowPassFilter(&temp);
-				break;
-			}			
-			break;
-			
-			case FILTER_HIGH:
-			switch(poles)
-			{
-				case 4:
-				highPassFilter(&temp);
-				
-				case 3:
-				highPassFilter(&temp);
-				
-				case 2:
-				highPassFilter(&temp);
-				
-				case 1:
-				highPassFilter(&temp);
-				break;
+				if(*((unsigned short*)(&envelopeGain) + 1) > 0xFF)
+				{
+					
+					envelopPhase++;
+				}
 			}
+			else
+			{
+				envelopPhase++;
+				envelopeGain = 0xFF00;
+			}
+		}
+		if(envelopPhase == DECAY_SLOPE)
+		{
+			if(decayRate > 0)
+			{
+				envelopeGain -= decayRate;
+				
+				if(*((unsigned short*)(&envelopeGain) + 1) < sustainLevel)
+				{
+					//Set envelope to sustain level gain
+					envelopPhase++;
+				}
+			}
+			else
+				envelopPhase++;
+		}
+		if(envelopPhase == RELEASE_SLOPE)
+		{
+			if(releaseRate)
+		}
+		
+		output = *((unsigned char*)(&temp) + 1);
+		
+		/*switch(poles)
+		{
+			case 0:
+			__asm__("nop");
 			break;
 			
-			case FILTER_BAND:
+			case 4:
+			lowPassFilter(&output);
+			
+			case 3:
+			lowPassFilter(&output);
+			
+			case 2:
+			lowPassFilter(&output);
+			
+			case 1:
+			lowPassFilter(&output);
 			break;
 		}*/
 		
-		if(lfoOut[0] != lfoOut[1] && lfoRouteFunction != NULL)
-			lfoRouteFunction();
+		/*if(lfoOut[0] != lfoOut[1] && lfoRouteFunction != NULL)
+			lfoRouteFunction();*/
 		
-		OCR2A = *((unsigned char*)&temp + 1);
+		OCR2A = *(((unsigned char*)&temp) + 1);
 	}
 }
 
-inline void lowPassFilter(unsigned long *val)
+inline void lowPassFilter(unsigned char *val)
 {
-	*val = (*val - prevOutput[0]);
-	*val = (*val*filterCutoff);
+	char newVal = *val - 128;
 	
-	*val = *((unsigned short*)((unsigned char*)val + 1)) + prevOutput[0];
+	newVal = (newVal - prevOutput[0]);
+	short temp = *val;
+	if(temp & 0x80)
+		*((char*)(&temp) + 1) = 0xFF;
 	
-	prevOutput[0] = *val;
+	temp *= filterCutoff;
+	long sum = temp + prevOutput[0];
+	
+	*val = *((char*)(&sum) + 1);
+	
+	prevOutput[0] = temp;
 }
 
 inline void highPassFilter(unsigned long *val)
@@ -580,6 +634,13 @@ void lfoRouteSemis2()
 	
 	osc2NoteUpdate();
 	osc2CentsUpdate();
+}
+
+void lfoRouteCutoff()
+{
+	bool isNegative = lfoOut[1] < 0;
+	lfoOut[1] *= lfoOut[1] > 0 ? 1 : -1;
+	unsigned short temp = lfoOut[1]*lfoDepth;
 }
 
 //Fixed Lib
