@@ -37,6 +37,7 @@ SUBDIRS :=
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
+../MIDILib.cpp \
 ../serialLib.cpp \
 ../SynthLCD.cpp
 
@@ -48,18 +49,22 @@ ASM_SRCS +=
 
 
 OBJS +=  \
+MIDILib.o \
 serialLib.o \
 SynthLCD.o
 
 OBJS_AS_ARGS +=  \
+MIDILib.o \
 serialLib.o \
 SynthLCD.o
 
 C_DEPS +=  \
+MIDILib.d \
 serialLib.d \
 SynthLCD.d
 
 C_DEPS_AS_ARGS +=  \
+MIDILib.d \
 serialLib.d \
 SynthLCD.d
 
@@ -77,6 +82,8 @@ LINKER_SCRIPT_DEP+=
 
 
 # AVR32/GNU C Compiler
+
+
 
 
 

@@ -62,24 +62,3 @@ int bytesToRead()
 {
 	return rxMessagesRemaining;
 }
-
-ISR(USART_TX_vect)
-{
-	txMessagesRemaining--;
-	
-	if(txMessagesRemaining > 0)
-		UDR0 = txBuffer[txBufferReadIndex & TX_BUFFER_SIZE];
-	
-	txBufferReadIndex++;
-}
-
-ISR(USART_RX_vect)
-{
-	rxBuffer[rxBufferWriteIndex & RX_BUFFER_SIZE] = UDR0;
-	
-	rxBufferWriteIndex++;
-	rxMessagesRemaining++;
-	
-	if(rxEvent != 0)
-		rxEvent(rxMessagesRemaining);
-}

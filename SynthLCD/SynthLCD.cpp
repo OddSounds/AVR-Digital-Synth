@@ -160,17 +160,6 @@ unsigned short lfsrState = 0xACE1;
 //Function defs
 void adcInit(void);
 
-void initLCD(void);
-inline void lcdShift(unsigned char data);
-inline void lcdWrite(char control, char data);
-inline void lcdClear(void);
-inline void lcdString(char* str);
-inline void lcdCharacter(char character);
-inline void gotoXY(char x, char y);
-
-inline void updateScreen(void);
-inline void writeLine(unsigned char line, char* str);
-
 void lfoRouteOsc1(void);
 void lfoRouteOsc2(void);
 void lfoRouteOc2Sync(void);
@@ -185,10 +174,8 @@ void lfoRouteWave2(void);
 void lfoRouteFilterCutoff(void);
 void lfoRouteFilterPoles(void);
 
-inline void lowPassFilter(unsigned long *val);
+inline void lowPassFilter(unsigned short *val);
 inline void highPassFilter(unsigned long *val);
-
-void uartInit(void);
 
 void oscInit(void);
 void btnInit(void);
@@ -427,7 +414,7 @@ ISR(TIMER2_OVF_vect)
 		lfoOut[1] = pgm_read_byte(analogWaveTable + waveformOffset[lfoWaveForm] + (unsigned char)*((unsigned char*)(&lfoPhaccu)+2));
 		lfoOut[1] -= 128;
 
-		unsigned long temp = 0;
+		unsigned short temp = 0;
 	
 		osc1Out[2] *= osc1Weight;
 		osc2Out[2] *= osc2Weight;
@@ -439,6 +426,11 @@ ISR(TIMER2_OVF_vect)
 			temp = osc1Out[2];
 			temp += osc2Out[2];
 		}
+		
+		if(osc1Out[2] > temp)
+			temp = 0xFF00;
+			
+		temp = *(((unsigned char*)&temp) + 1);
 		
 		switch(poles)
 		{
@@ -463,11 +455,11 @@ ISR(TIMER2_OVF_vect)
 		if(lfoOut[0] != lfoOut[1] && lfoRouteFunction != NULL)
 			lfoRouteFunction();
 		
-		OCR2A = *((unsigned char*)&temp + 1);
+		OCR2A = (unsigned char)temp;
 	}
 }
 
-inline void lowPassFilter(unsigned long *val)
+inline void lowPassFilter(unsigned short *val)
 {
 	short temp = filterCutoff;
 	temp += dFilterCutoff;
@@ -557,16 +549,7 @@ void lfoRouteSemis2()
 }
 
 void lfoRouteOc2Sync()
-{
-	if(lfoOut[1] < 0)
-	{
-		
-	}
-	else
-	{
-		
-	}
-}
+{}
 
 void lfoRouteFilterCutoff()
 {
