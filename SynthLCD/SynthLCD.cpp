@@ -23,6 +23,8 @@
 
 #include "serialLib.h"
 
+#define USE_ENVELOPE
+
 #define MENU_OSC1	0
 #define MENU_OSC2	1
 #define MENU_LFO	2
@@ -160,11 +162,11 @@ short lfsrState = 0xACE1;
 unsigned short clock_32k = 0;
 unsigned long envelopeGain = 0;
 
-unsigned char attackRate = 0;
-unsigned char decayRate = 0;
+unsigned char attackRate = 10;
+unsigned char decayRate = 255;
 unsigned char sustainLevel = 255;
 unsigned char releaseRate = 0;
-unsigned char envelopPhase = ATTACK_SLOPE;
+unsigned char envelopePhase = ATTACK_SLOPE;
 
 //Function defs
 void adcInit(void);
@@ -401,10 +403,10 @@ ISR(ADC_vect)
 }
 
 ISR(TIMER2_OVF_vect)
-{		
+{	
+	lfsrUpdate();	
 	if(notePlaying)
 	{
-		lfsrUpdate();
 		clock_32k++;
 		
 		if(clock_32k > 32000)
@@ -467,44 +469,62 @@ ISR(TIMER2_OVF_vect)
 				temp = 0;			
 		}
 		
-		if(envelopPhase == ATTACK_SLOPE)
+#ifdef USE_ENVELOPE 
+
+		if(envelopePhase == ATTACK_SLOPE)
 		{
 			if(attackRate > 0)
 			{
 				envelopeGain += attackRate;
 				
-				if(*((unsigned short*)(&envelopeGain) + 1) > 0xFF)
+				if(*((unsigned char*)(&envelopeGain) + 1) >= 0xFF)
 				{
-					
-					envelopPhase++;
+					envelopeGain = 0xFF00;
+					envelopePhase++;
 				}
 			}
 			else
 			{
-				envelopPhase++;
+				envelopePhase++;
 				envelopeGain = 0xFF00;
 			}
 		}
-		if(envelopPhase == DECAY_SLOPE)
+		if(envelopePhase == DECAY_SLOPE)
 		{
 			if(decayRate > 0)
 			{
 				envelopeGain -= decayRate;
 				
-				if(*((unsigned short*)(&envelopeGain) + 1) < sustainLevel)
+				if(*((unsigned char*)(&envelopeGain) + 1) <= sustainLevel)
 				{
-					//Set envelope to sustain level gain
-					envelopPhase++;
+					*((unsigned char*)(&envelopeGain) + 1) = sustainLevel;
+					*((unsigned char*)(&envelopeGain)) = 0;
+					envelopePhase++;
 				}
 			}
-			else
-				envelopPhase++;
+			else if(decayRate == 0)
+			{
+				*((unsigned char*)(&envelopeGain) + 1) = sustainLevel;
+				*((unsigned char*)(&envelopeGain)) = 0;
+				envelopePhase++;
+			}
 		}
-		if(envelopPhase == RELEASE_SLOPE)
+		if(envelopePhase == RELEASE_SLOPE)
 		{
-			if(releaseRate)
+			if(releaseRate > 0)
+			{
+				envelopeGain -= releaseRate;
+				
+				if(*((unsigned char*)(&envelopeGain) + 1) <= 0)
+					*((unsigned short*)(&envelopeGain)) = 0;
+			}
+			else
+				*((unsigned short*)(&envelopeGain)) = 0;
 		}
 		
+		temp = (*((unsigned char*)(&temp) + 1))*(*((unsigned char*)(&envelopeGain) + 1));
+		
+#endif
 		output = *((unsigned char*)(&temp) + 1);
 		
 		/*switch(poles)
