@@ -141,7 +141,7 @@ unsigned long refclk;
 unsigned long reftime;
 
 unsigned char resMix = 0;
-short prevOutput[4] = {0};
+unsigned char prevOutput[4] = {0};
 unsigned short prevInput[4] = {0};
 
 bool notePlaying = true;
@@ -160,7 +160,7 @@ unsigned char poles = 0;
 short lfsrState = 0xACE1;
 
 unsigned short clock_32k = 0;
-unsigned long envelopeGain = 0;
+unsigned short envelopeGain = 0;
 
 unsigned char attackRate = 10;
 unsigned char decayRate = 255;
@@ -448,7 +448,6 @@ ISR(TIMER2_OVF_vect)
 		lfoOut[1] -= 128;*/
 
 		long temp = 0;
-		unsigned char output = 0;
 		
 		osc1Out[2] *= osc1Weight;
 		osc2Out[2] *= osc2Weight;
@@ -469,16 +468,38 @@ ISR(TIMER2_OVF_vect)
 				temp = 0;			
 		}
 		
+		lowPassFilter((unsigned char*)(&temp + 1));
+		
+		/*switch(poles)
+		{
+			case 0:
+			__asm__("nop");
+			break;
+			
+			case 4:
+			lowPassFilter((unsigned char*)(&temp + 1));
+			
+			case 3:
+			lowPassFilter((unsigned char*)(&temp + 1));
+			
+			case 2:
+			lowPassFilter((unsigned char*)(&temp + 1));
+			
+			case 1:
+			lowPassFilter((unsigned char*)(&temp + 1));
+			break;
+		}*/
+		
+//Straight linear envelope
 #ifdef USE_ENVELOPE 
-
 		if(envelopePhase == ATTACK_SLOPE)
 		{
 			if(attackRate > 0)
 			{
 				envelopeGain += attackRate;
 				
-				if(*((unsigned char*)(&envelopeGain) + 1) >= 0xFF)
-				{
+				if(*((unsigned char*)(&envelopeGain) + 1) >= 0xFF) //Because the largest attackRate can be is 255, envelopeGain will never change by more than 1
+				{												   //The equals would be fine on its own
 					envelopeGain = 0xFF00;
 					envelopePhase++;
 				}
@@ -499,14 +520,26 @@ ISR(TIMER2_OVF_vect)
 				{
 					*((unsigned char*)(&envelopeGain) + 1) = sustainLevel;
 					*((unsigned char*)(&envelopeGain)) = 0;
-					envelopePhase++;
+					
+					//If the sustain level is 0, there's no point in going through the sustain sequence
+					//or the release stage for that matter
+					//Just jump to waiting for a new note
+					if(sustainLevel == 0)
+						envelopePhase = WAITING;
+					else
+						envelopePhase++;
 				}
 			}
 			else if(decayRate == 0)
 			{
 				*((unsigned char*)(&envelopeGain) + 1) = sustainLevel;
 				*((unsigned char*)(&envelopeGain)) = 0;
-				envelopePhase++;
+				
+				if(sustainLevel == 0)
+					envelopePhase = WAITING;
+				else
+					envelopePhase++;
+				
 			}
 		}
 		if(envelopePhase == RELEASE_SLOPE)
@@ -516,36 +549,24 @@ ISR(TIMER2_OVF_vect)
 				envelopeGain -= releaseRate;
 				
 				if(*((unsigned char*)(&envelopeGain) + 1) <= 0)
+				{
 					*((unsigned short*)(&envelopeGain)) = 0;
+					
+					envelopePhase++;
+					//The only thing that can move the envelope from the waiting stage to attack is a new note
+				}
 			}
 			else
+			{
 				*((unsigned short*)(&envelopeGain)) = 0;
+				
+				envelopePhase++;
+			}
 		}
 		
-		temp = (*((unsigned char*)(&temp) + 1))*(*((unsigned char*)(&envelopeGain) + 1));
+		temp = (*((unsigned char*)(&temp) + 1))*(*((unsigned char*)(&envelopeGain) + 1)); //Apply envelope
 		
-#endif
-		output = *((unsigned char*)(&temp) + 1);
-		
-		/*switch(poles)
-		{
-			case 0:
-			__asm__("nop");
-			break;
-			
-			case 4:
-			lowPassFilter(&output);
-			
-			case 3:
-			lowPassFilter(&output);
-			
-			case 2:
-			lowPassFilter(&output);
-			
-			case 1:
-			lowPassFilter(&output);
-			break;
-		}*/
+#endifquartus
 		
 		/*if(lfoOut[0] != lfoOut[1] && lfoRouteFunction != NULL)
 			lfoRouteFunction();*/
@@ -556,19 +577,16 @@ ISR(TIMER2_OVF_vect)
 
 inline void lowPassFilter(unsigned char *val)
 {
-	char newVal = *val - 128;
+	//y_n+1 = y_n + alpha*(x_n - y_n)
+	short diff = *val - prevOutput[0];
 	
-	newVal = (newVal - prevOutput[0]);
-	short temp = *val;
-	if(temp & 0x80)
-		*((char*)(&temp) + 1) = 0xFF;
-	
+	unsigned long temp = diff;
 	temp *= filterCutoff;
-	long sum = temp + prevOutput[0];
 	
-	*val = *((char*)(&sum) + 1);
+	diff = (short)(*(char*)(&temp + 1));
+	diff += prevOutput[0];
 	
-	prevOutput[0] = temp;
+	*val = (unsigned char)diff;
 }
 
 inline void highPassFilter(unsigned long *val)

@@ -120,7 +120,7 @@ Discarded input sections
  .bss.prevInput
                 0x00000000        0x8 SynthLCD.o
  .bss.prevOutput
-                0x00000000        0x8 SynthLCD.o
+                0x00000000        0x4 SynthLCD.o
  .bss.resMix    0x00000000        0x1 SynthLCD.o
  .bss.centsConst
                 0x00000000        0x4 SynthLCD.o
@@ -478,7 +478,7 @@ END GROUP
 .rela.plt
  *(.rela.plt)
 
-.text           0x00000000     0x135a
+.text           0x00000000     0x1314
  *(.vectors)
  .vectors       0x00000000       0x68 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.0.90/gcc/dev/atmega328p/avr5/crtatmega328p.o
                 0x00000000                __vector_default
@@ -580,46 +580,46 @@ END GROUP
                 0x00000cd4       0x5a SynthLCD.o
                 0x00000cd4                __vector_21
  .text.__vector_9
-                0x00000d2e      0x42e SynthLCD.o
+                0x00000d2e      0x3e8 SynthLCD.o
                 0x00000d2e                __vector_9
  .text.libgcc.mul
-                0x0000115c       0x20 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr5\libgcc.a(_mulsi3.o)
-                0x0000115c                __mulsi3
+                0x00001116       0x20 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr5\libgcc.a(_mulsi3.o)
+                0x00001116                __mulsi3
  .text.libgcc.mul
-                0x0000117c       0x16 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr5\libgcc.a(_muluhisi3.o)
-                0x0000117c                __muluhisi3
+                0x00001136       0x16 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr5\libgcc.a(_muluhisi3.o)
+                0x00001136                __muluhisi3
  .text.libgcc.mul
-                0x00001192       0x56 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr5\libgcc.a(_umulsidi3.o)
-                0x00001192                __umulsidi3
-                0x00001194                __umulsidi3_helper
+                0x0000114c       0x56 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr5\libgcc.a(_umulsidi3.o)
+                0x0000114c                __umulsidi3
+                0x0000114e                __umulsidi3_helper
  .text.libgcc.div
-                0x000011e8       0x1c c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr5\libgcc.a(_udivdi3.o)
-                0x000011e8                __umoddi3
-                0x000011ec                __udivdi3
-                0x000011ee                __udivdi3_umoddi3
+                0x000011a2       0x1c c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr5\libgcc.a(_udivdi3.o)
+                0x000011a2                __umoddi3
+                0x000011a6                __udivdi3
+                0x000011a8                __udivdi3_umoddi3
  .text.libgcc.div
-                0x00001204       0xa2 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr5\libgcc.a(_udivmod64.o)
-                0x00001204                __udivmod64
+                0x000011be       0xa2 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr5\libgcc.a(_udivmod64.o)
+                0x000011be                __udivmod64
  .text.libgcc.builtins
-                0x000012a6       0x32 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr5\libgcc.a(_ashldi3.o)
-                0x000012a6                __ashldi3
+                0x00001260       0x32 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr5\libgcc.a(_ashldi3.o)
+                0x00001260                __ashldi3
  .text.libgcc.builtins
-                0x000012d8       0x3c c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr5\libgcc.a(_ashrdi3.o)
-                0x000012d8                __ashrdi3
-                0x000012dc                __lshrdi3
- .text.libgcc   0x00001314       0x12 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr5\libgcc.a(_subdi3.o)
-                0x00001314                __subdi3
+                0x00001292       0x3c c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr5\libgcc.a(_ashrdi3.o)
+                0x00001292                __ashrdi3
+                0x00001296                __lshrdi3
+ .text.libgcc   0x000012ce       0x12 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr5\libgcc.a(_subdi3.o)
+                0x000012ce                __subdi3
  .text.libgcc.mul
-                0x00001326       0x1e c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr5\libgcc.a(_umulhisi3.o)
-                0x00001326                __umulhisi3
+                0x000012e0       0x1e c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr5\libgcc.a(_umulhisi3.o)
+                0x000012e0                __umulhisi3
  .text.libgcc.mul
-                0x00001344       0x12 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr5\libgcc.a(_muldi3_6.o)
-                0x00001344                __muldi3_6
-                0x00001356                . = ALIGN (0x2)
+                0x000012fe       0x12 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr5\libgcc.a(_muldi3_6.o)
+                0x000012fe                __muldi3_6
+                0x00001310                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x00001356        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr5\libgcc.a(_exit.o)
-                0x00001356                _exit
-                0x00001356                exit
+ .fini9         0x00001310        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr5\libgcc.a(_exit.o)
+                0x00001310                _exit
+                0x00001310                exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -638,11 +638,11 @@ END GROUP
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x00001356        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr5\libgcc.a(_exit.o)
+ .fini0         0x00001310        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.9.2/avr5\libgcc.a(_exit.o)
  *(.fini0)
-                0x0000135a                _etext = .
+                0x00001314                _etext = .
 
-.data           0x00800100      0x17a load address 0x0000135a
+.data           0x00800100      0x17a load address 0x00001314
                 0x00800100                PROVIDE (__data_start, .)
  *(.data)
  *(.data*)
@@ -690,7 +690,7 @@ END GROUP
                 0x0080027a                _edata = .
                 0x0080027a                PROVIDE (__data_end, .)
 
-.bss            0x0080027a      0x25e
+.bss            0x0080027a      0x25c
                 0x0080027a                PROVIDE (__bss_start, .)
  *(.bss)
  *(.bss*)
@@ -719,97 +719,97 @@ END GROUP
                 0x00800485        0x1 SynthLCD.o
                 0x00800485                releaseRate
  .bss.envelopeGain
-                0x00800486        0x4 SynthLCD.o
+                0x00800486        0x2 SynthLCD.o
                 0x00800486                envelopeGain
  .bss.clock_32k
-                0x0080048a        0x2 SynthLCD.o
-                0x0080048a                clock_32k
- .bss.reftime   0x0080048c        0x4 SynthLCD.o
-                0x0080048c                reftime
- .bss.refclk    0x00800490        0x4 SynthLCD.o
-                0x00800490                refclk
+                0x00800488        0x2 SynthLCD.o
+                0x00800488                clock_32k
+ .bss.reftime   0x0080048a        0x4 SynthLCD.o
+                0x0080048a                reftime
+ .bss.refclk    0x0080048e        0x4 SynthLCD.o
+                0x0080048e                refclk
  .bss.stepConst
-                0x00800494        0x4 SynthLCD.o
-                0x00800494                stepConst
- .bss.lfoFreq   0x00800498        0x4 SynthLCD.o
-                0x00800498                lfoFreq
- .bss.lfoTWord  0x0080049c        0x4 SynthLCD.o
-                0x0080049c                lfoTWord
- .bss.ringMod   0x008004a0        0x1 SynthLCD.o
-                0x008004a0                ringMod
- .bss.osc2Sync  0x008004a1        0x1 SynthLCD.o
-                0x008004a1                osc2Sync
- .bss.osc2Out   0x008004a2        0x6 SynthLCD.o
-                0x008004a2                osc2Out
+                0x00800492        0x4 SynthLCD.o
+                0x00800492                stepConst
+ .bss.lfoFreq   0x00800496        0x4 SynthLCD.o
+                0x00800496                lfoFreq
+ .bss.lfoTWord  0x0080049a        0x4 SynthLCD.o
+                0x0080049a                lfoTWord
+ .bss.ringMod   0x0080049e        0x1 SynthLCD.o
+                0x0080049e                ringMod
+ .bss.osc2Sync  0x0080049f        0x1 SynthLCD.o
+                0x0080049f                osc2Sync
+ .bss.osc2Out   0x008004a0        0x6 SynthLCD.o
+                0x008004a0                osc2Out
  .bss.osc2PhaseShift
-                0x008004a8        0x1 SynthLCD.o
-                0x008004a8                osc2PhaseShift
+                0x008004a6        0x1 SynthLCD.o
+                0x008004a6                osc2PhaseShift
  .bss.osc2OctaveShift
-                0x008004a9        0x1 SynthLCD.o
-                0x008004a9                osc2OctaveShift
+                0x008004a7        0x1 SynthLCD.o
+                0x008004a7                osc2OctaveShift
  .bss.dOsc2SemisShift
-                0x008004aa        0x1 SynthLCD.o
-                0x008004aa                dOsc2SemisShift
+                0x008004a8        0x1 SynthLCD.o
+                0x008004a8                dOsc2SemisShift
  .bss.osc2SemisShift
-                0x008004ab        0x1 SynthLCD.o
-                0x008004ab                osc2SemisShift
+                0x008004a9        0x1 SynthLCD.o
+                0x008004a9                osc2SemisShift
  .bss.dOsc2CentsShift
-                0x008004ac        0x1 SynthLCD.o
-                0x008004ac                dOsc2CentsShift
+                0x008004aa        0x1 SynthLCD.o
+                0x008004aa                dOsc2CentsShift
  .bss.osc2CentsShift
-                0x008004ad        0x2 SynthLCD.o
-                0x008004ad                osc2CentsShift
+                0x008004ab        0x2 SynthLCD.o
+                0x008004ab                osc2CentsShift
  .bss.osc2TWord
-                0x008004af        0x4 SynthLCD.o
-                0x008004af                osc2TWord
+                0x008004ad        0x4 SynthLCD.o
+                0x008004ad                osc2TWord
  .bss.osc2Phaccu
-                0x008004b3        0x4 SynthLCD.o
-                0x008004b3                osc2Phaccu
- .bss.osc1Out   0x008004b7        0x6 SynthLCD.o
-                0x008004b7                osc1Out
+                0x008004b1        0x4 SynthLCD.o
+                0x008004b1                osc2Phaccu
+ .bss.osc1Out   0x008004b5        0x6 SynthLCD.o
+                0x008004b5                osc1Out
  .bss.osc1PhaseShift
-                0x008004bd        0x1 SynthLCD.o
-                0x008004bd                osc1PhaseShift
+                0x008004bb        0x1 SynthLCD.o
+                0x008004bb                osc1PhaseShift
  .bss.osc1OctaveShift
-                0x008004be        0x1 SynthLCD.o
-                0x008004be                osc1OctaveShift
+                0x008004bc        0x1 SynthLCD.o
+                0x008004bc                osc1OctaveShift
  .bss.dOsc1SemisShift
-                0x008004bf        0x1 SynthLCD.o
-                0x008004bf                dOsc1SemisShift
+                0x008004bd        0x1 SynthLCD.o
+                0x008004bd                dOsc1SemisShift
  .bss.osc1SemisShift
-                0x008004c0        0x1 SynthLCD.o
-                0x008004c0                osc1SemisShift
+                0x008004be        0x1 SynthLCD.o
+                0x008004be                osc1SemisShift
  .bss.dOsc1CentsShift
-                0x008004c1        0x1 SynthLCD.o
-                0x008004c1                dOsc1CentsShift
+                0x008004bf        0x1 SynthLCD.o
+                0x008004bf                dOsc1CentsShift
  .bss.osc1CentsShift
-                0x008004c2        0x2 SynthLCD.o
-                0x008004c2                osc1CentsShift
+                0x008004c0        0x2 SynthLCD.o
+                0x008004c0                osc1CentsShift
  .bss.osc1TWord
-                0x008004c4        0x4 SynthLCD.o
-                0x008004c4                osc1TWord
+                0x008004c2        0x4 SynthLCD.o
+                0x008004c2                osc1TWord
  .bss.osc1Phaccu
-                0x008004c8        0x4 SynthLCD.o
-                0x008004c8                osc1Phaccu
+                0x008004c6        0x4 SynthLCD.o
+                0x008004c6                osc1Phaccu
  .bss.osc1PhaccuShort
-                0x008004cc        0x3 SynthLCD.o
-                0x008004cc                osc1PhaccuShort
- .bss.adcValue  0x008004cf        0x8 SynthLCD.o
-                0x008004cf                adcValue
+                0x008004ca        0x3 SynthLCD.o
+                0x008004ca                osc1PhaccuShort
+ .bss.adcValue  0x008004cd        0x8 SynthLCD.o
+                0x008004cd                adcValue
  .bss.adcSelect
-                0x008004d7        0x1 SynthLCD.o
-                0x008004d7                adcSelect
+                0x008004d5        0x1 SynthLCD.o
+                0x008004d5                adcSelect
  *(COMMON)
-                0x008004d8                PROVIDE (__bss_end, .)
-                0x0000135a                __data_load_start = LOADADDR (.data)
-                0x000014d4                __data_load_end = (__data_load_start + SIZEOF (.data))
+                0x008004d6                PROVIDE (__bss_end, .)
+                0x00001314                __data_load_start = LOADADDR (.data)
+                0x0000148e                __data_load_end = (__data_load_start + SIZEOF (.data))
 
-.noinit         0x008004d8        0x0
-                0x008004d8                PROVIDE (__noinit_start, .)
+.noinit         0x008004d6        0x0
+                0x008004d6                PROVIDE (__noinit_start, .)
  *(.noinit*)
-                0x008004d8                PROVIDE (__noinit_end, .)
-                0x008004d8                _end = .
-                0x008004d8                PROVIDE (__heap_start, .)
+                0x008004d6                PROVIDE (__noinit_end, .)
+                0x008004d6                _end = .
+                0x008004d6                PROVIDE (__heap_start, .)
 
 .eeprom         0x00810000        0x0
  *(.eeprom*)
@@ -884,37 +884,37 @@ END GROUP
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000     0x1863
+.debug_info     0x00000000     0x1894
  *(.debug_info .gnu.linkonce.wi.*)
  .debug_info    0x00000000      0x295 serialLib.o
- .debug_info    0x00000295     0x15ce SynthLCD.o
+ .debug_info    0x00000295     0x15ff SynthLCD.o
 
 .debug_abbrev   0x00000000      0x4d8
  *(.debug_abbrev)
  .debug_abbrev  0x00000000      0x196 serialLib.o
  .debug_abbrev  0x00000196      0x342 SynthLCD.o
 
-.debug_line     0x00000000      0x97a
+.debug_line     0x00000000      0x97f
  *(.debug_line .debug_line.* .debug_line_end)
  .debug_line    0x00000000      0x2d2 serialLib.o
- .debug_line    0x000002d2      0x6a8 SynthLCD.o
+ .debug_line    0x000002d2      0x6ad SynthLCD.o
 
-.debug_frame    0x00000000      0x2f8
+.debug_frame    0x00000000      0x2f4
  *(.debug_frame)
  .debug_frame   0x00000000       0xfc serialLib.o
- .debug_frame   0x000000fc      0x1fc SynthLCD.o
+ .debug_frame   0x000000fc      0x1f8 SynthLCD.o
 
-.debug_str      0x00000000     0x8eb1
+.debug_str      0x00000000     0x8ec8
  *(.debug_str)
  .debug_str     0x00000000     0x600c serialLib.o
                                0x60bc (size before relaxing)
- .debug_str     0x0000600c     0x2ea5 SynthLCD.o
-                               0x8e92 (size before relaxing)
+ .debug_str     0x0000600c     0x2ebc SynthLCD.o
+                               0x8ea9 (size before relaxing)
 
-.debug_loc      0x00000000      0xed4
+.debug_loc      0x00000000      0xe9e
  *(.debug_loc)
  .debug_loc     0x00000000      0x163 serialLib.o
- .debug_loc     0x00000163      0xd71 SynthLCD.o
+ .debug_loc     0x00000163      0xd3b SynthLCD.o
 
 .debug_macinfo
  *(.debug_macinfo)
