@@ -11,6 +11,9 @@
 
 typedef unsigned char byte;
 
+typedef unsigned short _8s8;
+typedef unsigned long _16s16;
+
 inline void toFixed(int a, unsigned long &b);
 
 inline void toFixed(double a, unsigned long &b);
