@@ -27,15 +27,15 @@
     <eraseonlaunchrule>0</eraseonlaunchrule>
     <AsfFrameworkConfig>
       <framework-data>
-  <options />
-  <configurations />
-  <files />
-  <documentation help="" />
-  <offline-documentation help="" />
-  <dependencies>
-    <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.22.0" />
-  </dependencies>
-</framework-data>
+        <options />
+        <configurations />
+        <files />
+        <documentation help="" />
+        <offline-documentation help="" />
+        <dependencies>
+          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.22.0" />
+        </dependencies>
+      </framework-data>
     </AsfFrameworkConfig>
     <avrtool>com.atmel.avrdbg.tool.simulator</avrtool>
     <com_atmel_avrdbg_tool_simulator>
@@ -165,6 +165,9 @@
     <Compile Include="H\Globals.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="H\MIDI.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="H\OscEngine.h">
       <SubType>compile</SubType>
     </Compile>
@@ -181,6 +184,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Src\main.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Src\MIDI.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Src\OscEngine.cpp">

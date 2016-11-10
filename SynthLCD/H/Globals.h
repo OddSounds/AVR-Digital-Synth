@@ -14,7 +14,4 @@
 #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
 #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
 
-unsigned char commandBytes[3];
-unsigned char commandCount = 0;
-
 #endif /* GLOBALS_H_ */
