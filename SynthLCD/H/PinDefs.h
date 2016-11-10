@@ -9,8 +9,6 @@
 #ifndef PINDEFS_H_
 #define PINDEFS_H_
 
-
-
 #define LCD_CLK_DIR		DDRD
 #define LCD_CLK_WR		PORTD
 #define LCD_CLK_RD		PIND

@@ -5,7 +5,7 @@
  *  Author: Sam
  */ 
 
-#include "serialLib.h"
+#include "../H/serialLib.h"
 #include "avr/interrupt.h"
 
 char txBuffer[TX_BUFFER_SIZE];
