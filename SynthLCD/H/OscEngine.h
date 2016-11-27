@@ -14,41 +14,37 @@
 #include "Globals.h"
 #include "WaveTables.h"
 
-#define USE_ENVELOPE
+#define NUM_OSC		6
 
-#define FILTER_LOW	0
-#define FILTER_HIGH	1
-#define FILTER_BAND	2
+#define DISABLE_OSC0()	TCCR0B = 0
+#define ENABLE_OSC0()	TCCR0B = 1
 
-#define DISABLE_TIMER()	cbi(TIMSK2, TOIE2);
-#define ENABLE_TIMER()	sbi(TIMSK2, TOIE2);
+#define DISABLE_OSC1()	TCCR1B = 0
+#define ENABLE_OSC1()	TCCR1B = 1
 
-void oscInit(void);
+#define DISABLE_OSC2()	TCCR2B = 0
+#define ENABLE_OSC2()	TCCR2B = 1
+
+#define OSC0_0_DDR	DDRD
+#define OSC0_1_DDR	DDRD
+
+#define OSC1_0_DDR	DDRB
+#define OSC1_1_DDR	DDRB
+
+#define OSC2_0_DDR	DDRB
+#define OSC2_1_DDR	DDRD
+
+#define OSC0_0_PIN	PIND6
+#define OSC0_1_PIN	PIND5
+
+#define OSC1_0_PIN	PINB1
+#define OSC1_1_PIN	PINB2
+
+#define OSC2_0_PIN	PINB3
+#define OSC2_1_PIN	PIND3
+
 void oscSetup(void);
-
-void lfoRouteOsc1(void);
-void lfoRouteOsc2(void);
-void lfoRouteCents1(void);
-void lfoRouteCents2(void);
-void lfoRouteSemis1(void);
-void lfoRouteSemis2(void);
-void lfoRoutePhase1(void);
-void lfoRoutePhase2(void);
-void lfoRouteWave1(void);
-void lfoRouteWave2(void);
-void lfoRouteCutoff(void);
-void lfoRouteFilterMode(void);
-
-inline void lowPassFilter(unsigned char *val);
-inline void highPassFilter(unsigned long *val);
-
-inline void noteUpdate(void);
-
-inline void osc1NoteUpdate();
-inline void osc1CentsUpdate();
-
-inline void osc2NoteUpdate();
-inline void osc2CentsUpdate();
+void startOsc(void);
 
 void lfsrUpdate();
 
