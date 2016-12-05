@@ -145,7 +145,6 @@ ISR(TIMER0_OVF_vect, ISR_NAKED)
 		:
 		: ""(WAVE_NOISE)
 		: "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23", "r24");
-		
 	asm("lds r25, %0" "\n\t"			//Load in phase shift
 		
 		"lsl r24" "\n\t"				//oscWaveForm[0] * 2
@@ -196,14 +195,13 @@ ISR(TIMER0_OVF_vect, ISR_NAKED)
 		"adc r18, r22" "\n\t"
 		"adc r19, r23" "\n\t"
 		
-		"lds r24, oscWaveForm" "\n\t"			//Load wave form type
+		"lds r24, (oscWaveForm + 1)" "\n\t"			//Load wave form type
 		
 		"cpi r24, %0" "\n\t"			//Compare with WAVE_NOISE
 		"breq _OSC1_NOISE" "\n\t"
 		:
 		: ""(WAVE_NOISE)
 		: "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23", "r24");
-
 	asm("lds r25, %0" "\n\t"			//Load in phase shift
 	
 		"lsl r24" "\n\t"				//oscWaveForm[0] * 2
@@ -233,15 +231,233 @@ ISR(TIMER0_OVF_vect, ISR_NAKED)
 		: ""(oscPhaseShift[1]), "x"(waveformOffset), "z"(analogWaveTable)
 		: "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23", "r24");
 
-	asm("_OSC2_MATH:" "\n\t"
+	asm("_OSC2_MATH: " "\n\t"
 		"sts (oscPhaseAccum + 4), r16" "\n\t"		//Save the old phase accum
 		"sts (oscPhaseAccum + 5), r17" "\n\t"
 		"sts (oscPhaseAccum + 6), r18" "\n\t"
 		"sts (oscPhaseAccum + 7), r19" "\n\t"
+			
+		"lds r16, (oscPhaseAccum + 8)" "\n\t"			//Load in phase accumulator
+		"lds r17, (oscPhaseAccum + 9)" "\n\t"
+		"lds r18, (oscPhaseAccum + 10)" "\n\t"
+		"lds r19, (oscPhaseAccum + 11)" "\n\t"
+	
+		"lds r20, (oscTuningWord + 8)" "\n\t"			//Load in tuning word
+		"lds r21, (oscTuningWord + 9)" "\n\t"
+		"lds r22, (oscTuningWord + 10)" "\n\t"
+		"lds r23, (oscTuningWord + 11)" "\n\t"
+	
+		"add r16, r20" "\n\t"			//Add tuning word to phase accumulator
+		"adc r17, r21" "\n\t"
+		"adc r18, r22" "\n\t"
+		"adc r19, r23" "\n\t"
+	
+		"lds r24, (oscWaveForm + 2)" "\n\t"			//Load wave form type
+	
+		"cpi r24, %0" "\n\t"			//Compare with WAVE_NOISE
+		"breq _OSC2_NOISE" "\n\t"
 		:
+		: ""(WAVE_NOISE)
+		: "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23", "r24");
+	asm("lds r25, %0" "\n\t"			//Load in phase shift
+	
+		"lsl r24" "\n\t"				//oscWaveForm[0] * 2
+	
+		"add r26, r24" "\n\t"			//waveFormOffset[oscWaveFrom[0]]
+		"adc r27, r1" "\n\t"			//R1 should be 0. Just need to take care of the carry
+	
+		"ld r28, X+" "\n\t"				//Load in wave form offset
+		"ld r29, X" "\n\t"
+	
+		"add r30, r28" "\n\t"			//Add wave offset to wave table
+		"adc r31, r29" "\n\t"
+	
+		"add r25, r19" "\n\t"			//Add the phase shift to the current phase accumulator
+	
+		"add r30, r25" "\n\t"			//Add the phase to the wave table
+		"adc r31, r1" "\n\t"
+	
+		"lpm r24, Z" "\n\t"				//Read amplitude from program memory
+	
+		"out 0x27, r24" "\n\t"			//Out to OCR0A
+		"rjmp _OSC3_MATH" "\n\t"
+	
+		"_OSC2_NOISE: " "\n\t"
+		"out 0x27, r12" "\n\t"
 		:
-		:);
-
+		: ""(oscPhaseShift[2]), "x"(waveformOffset), "z"(analogWaveTable)
+		: "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23", "r24");
+	
+	asm("_OSC3_MATH:" "\n\t"
+		"sts (oscPhaseAccum + 8), r16" "\n\t"		//Save the old phase accum
+		"sts (oscPhaseAccum + 9), r17" "\n\t"
+		"sts (oscPhaseAccum + 10), r18" "\n\t"
+		"sts (oscPhaseAccum + 11), r19" "\n\t"
+	
+		"lds r16, (oscPhaseAccum + 12)" "\n\t"			//Load in phase accumulator
+		"lds r17, (oscPhaseAccum + 13)" "\n\t"
+		"lds r18, (oscPhaseAccum + 14)" "\n\t"
+		"lds r19, (oscPhaseAccum + 15)" "\n\t"
+	
+		"lds r20, (oscTuningWord + 12)" "\n\t"			//Load in tuning word
+		"lds r21, (oscTuningWord + 13)" "\n\t"
+		"lds r22, (oscTuningWord + 14)" "\n\t"
+		"lds r23, (oscTuningWord + 15)" "\n\t"
+	
+		"add r16, r20" "\n\t"			//Add tuning word to phase accumulator
+		"adc r17, r21" "\n\t"
+		"adc r18, r22" "\n\t"
+		"adc r19, r23" "\n\t"
+	
+		"lds r24, (oscWaveForm + 3)" "\n\t"			//Load wave form type
+	
+		"cpi r24, %0" "\n\t"			//Compare with WAVE_NOISE
+		"breq _OSC3_NOISE" "\n\t"
+		:
+		: ""(WAVE_NOISE)
+		: "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23", "r24");
+	asm("lds r25, %0" "\n\t"			//Load in phase shift
+	
+		"lsl r24" "\n\t"				//oscWaveForm[0] * 2
+	
+		"add r26, r24" "\n\t"			//waveFormOffset[oscWaveFrom[0]]
+		"adc r27, r1" "\n\t"			//R1 should be 0. Just need to take care of the carry
+	
+		"ld r28, X+" "\n\t"				//Load in wave form offset
+		"ld r29, X" "\n\t"
+	
+		"add r30, r28" "\n\t"			//Add wave offset to wave table
+		"adc r31, r29" "\n\t"
+	
+		"add r25, r19" "\n\t"			//Add the phase shift to the current phase accumulator
+	
+		"add r30, r25" "\n\t"			//Add the phase to the wave table
+		"adc r31, r1" "\n\t"
+	
+		"lpm r24, Z" "\n\t"				//Read amplitude from program memory
+	
+		"out 0x27, r24" "\n\t"			//Out to OCR0A
+		"rjmp _OSC4_MATH" "\n\t"
+	
+		"_OSC3_NOISE: " "\n\t"
+		"out 0x27, r13" "\n\t"
+		:
+		: ""(oscPhaseShift[3]), "x"(waveformOffset), "z"(analogWaveTable)
+		: "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23", "r24");
+		
+	asm("_OSC4_MATH: " "\n\t"
+		"sts (oscPhaseAccum + 12), r16" "\n\t"		//Save the old phase accum
+		"sts (oscPhaseAccum + 13), r17" "\n\t"
+		"sts (oscPhaseAccum + 14), r18" "\n\t"
+		"sts (oscPhaseAccum + 15), r19" "\n\t"
+	
+		"lds r16, (oscPhaseAccum + 16)" "\n\t"			//Load in phase accumulator
+		"lds r17, (oscPhaseAccum + 17)" "\n\t"
+		"lds r18, (oscPhaseAccum + 18)" "\n\t"
+		"lds r19, (oscPhaseAccum + 19)" "\n\t"
+	
+		"lds r20, (oscTuningWord + 16)" "\n\t"			//Load in tuning word
+		"lds r21, (oscTuningWord + 17)" "\n\t"
+		"lds r22, (oscTuningWord + 18)" "\n\t"
+		"lds r23, (oscTuningWord + 19)" "\n\t"
+	
+		"add r16, r20" "\n\t"			//Add tuning word to phase accumulator
+		"adc r17, r21" "\n\t"
+		"adc r18, r22" "\n\t"
+		"adc r19, r23" "\n\t"
+	
+		"lds r24, (oscWaveForm + 4)" "\n\t"			//Load wave form type
+	
+		"cpi r24, %0" "\n\t"			//Compare with WAVE_NOISE
+		"breq _OSC4_NOISE" "\n\t"
+		:
+		: ""(WAVE_NOISE)
+		: "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23", "r24");
+	asm("lds r25, %0" "\n\t"			//Load in phase shift
+	
+		"lsl r24" "\n\t"				//oscWaveForm[0] * 2
+	
+		"add r26, r24" "\n\t"			//waveFormOffset[oscWaveFrom[0]]
+		"adc r27, r1" "\n\t"			//R1 should be 0. Just need to take care of the carry
+	
+		"ld r28, X+" "\n\t"				//Load in wave form offset
+		"ld r29, X" "\n\t"
+	
+		"add r30, r28" "\n\t"			//Add wave offset to wave table
+		"adc r31, r29" "\n\t"
+	
+		"add r25, r19" "\n\t"			//Add the phase shift to the current phase accumulator
+	
+		"add r30, r25" "\n\t"			//Add the phase to the wave table
+		"adc r31, r1" "\n\t"
+	
+		"lpm r24, Z" "\n\t"				//Read amplitude from program memory
+	
+		"out 0x27, r24" "\n\t"			//Out to OCR0A
+		"rjmp _OSC5_MATH" "\n\t"
+	
+		"_OSC4_NOISE: " "\n\t"
+		"out 0x27, r14" "\n\t"
+		:
+		: ""(oscPhaseShift[4]), "x"(waveformOffset), "z"(analogWaveTable)
+		: "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23", "r24");
+	
+	asm("_OSC5_MATH:" "\n\t"
+		"sts (oscPhaseAccum + 16), r16" "\n\t"		//Save the old phase accum
+		"sts (oscPhaseAccum + 17), r17" "\n\t"
+		"sts (oscPhaseAccum + 18), r18" "\n\t"
+		"sts (oscPhaseAccum + 19), r19" "\n\t"
+	
+		"lds r16, (oscPhaseAccum + 20)" "\n\t"			//Load in phase accumulator
+		"lds r17, (oscPhaseAccum + 21)" "\n\t"
+		"lds r18, (oscPhaseAccum + 22)" "\n\t"
+		"lds r19, (oscPhaseAccum + 23)" "\n\t"
+	
+		"lds r20, (oscTuningWord + 20)" "\n\t"			//Load in tuning word
+		"lds r21, (oscTuningWord + 21)" "\n\t"
+		"lds r22, (oscTuningWord + 22)" "\n\t"
+		"lds r23, (oscTuningWord + 23)" "\n\t"
+	
+		"add r16, r20" "\n\t"			//Add tuning word to phase accumulator
+		"adc r17, r21" "\n\t"
+		"adc r18, r22" "\n\t"
+		"adc r19, r23" "\n\t"
+	
+		"lds r24, (oscWaveForm + 5)" "\n\t"			//Load wave form type
+	
+		"cpi r24, %0" "\n\t"			//Compare with WAVE_NOISE
+		"breq _OSC5_NOISE" "\n\t"
+		:
+		: ""(WAVE_NOISE)
+		: "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23", "r24");
+	asm("lds r25, %0" "\n\t"			//Load in phase shift
+	
+		"lsl r24" "\n\t"				//oscWaveForm[0] * 2
+	
+		"add r26, r24" "\n\t"			//waveFormOffset[oscWaveFrom[0]]
+		"adc r27, r1" "\n\t"			//R1 should be 0. Just need to take care of the carry
+	
+		"ld r28, X+" "\n\t"				//Load in wave form offset
+		"ld r29, X" "\n\t"
+	
+		"add r30, r28" "\n\t"			//Add wave offset to wave table
+		"adc r31, r29" "\n\t"
+	
+		"add r25, r19" "\n\t"			//Add the phase shift to the current phase accumulator
+	
+		"add r30, r25" "\n\t"			//Add the phase to the wave table
+		"adc r31, r1" "\n\t"
+	
+		"lpm r24, Z" "\n\t"				//Read amplitude from program memory
+	
+		"out 0x27, r24" "\n\t"			//Out to OCR0A
+		"reti" "\n\t"
+	
+		"_OSC5_NOISE: " "\n\t"
+		"out 0x27, r15" "\n\t"
+		:
+		: ""(oscPhaseShift[5]), "x"(waveformOffset), "z"(analogWaveTable)
+		: "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23", "r24");		
 	/*oscPhaseAccum[0] += oscTuningWord[0];
 	if(oscWaveForm[0] != WAVE_NOISE)
 	{
@@ -279,8 +495,6 @@ ISR(TIMER0_OVF_vect, ISR_NAKED)
 		OCR2B = pgm_read_byte(analogWaveTable + waveformOffset[oscWaveForm[5]] + (unsigned char)(*(((unsigned char*)&oscPhaseAccum[5]) + 3) + oscPhaseShift[5]));
 	else
 		OCR2B = *((unsigned char*)&lfsrState[2] + 1);*/
-	
-	reti();
 }
 
 //Fixed Lib
