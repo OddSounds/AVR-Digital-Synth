@@ -43,6 +43,10 @@
 #define OSC2_0_PIN	PINB3
 #define OSC2_1_PIN	PIND3
 
+#define BUSY_DDR	DDRB
+#define BUSY_PIN	PINB0
+#define BUSY_PORT	PORTB
+
 void oscSetup(void);
 void startOsc(void);
 

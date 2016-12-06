@@ -46,6 +46,8 @@ void oscSetup()
 	
 	sbi(OSC2_0_DDR, OSC2_0_PIN);
 	sbi(OSC2_1_DDR, OSC2_1_PIN);
+	
+	sbi(BUSY_DDR, BUSY_PIN);
 }
 
 //Time critical function
@@ -120,6 +122,8 @@ inline void lfsrUpdate()
 //Oscillator 0
 ISR(TIMER0_OVF_vect, ISR_NAKED)
 {
+	sbi(BUSY_PORT, BUSY_PIN);
+	
 	lfsrUpdate();
 	
 	asm("_OSC0_MATH: " "\n\t"
@@ -222,11 +226,11 @@ ISR(TIMER0_OVF_vect, ISR_NAKED)
 	
 		"lpm r24, Z" "\n\t"				//Read amplitude from program memory
 	
-		"out 0x27, r24" "\n\t"			//Out to OCR0A
+		"out 0x28, r24" "\n\t"			//Out to OCR0A
 		"rjmp _OSC2_MATH" "\n\t"
 	
 		"_OSC1_NOISE: " "\n\t"
-		"out 0x27, r11" "\n\t"
+		"out 0x28, r11" "\n\t"
 		:
 		: ""(oscPhaseShift[1]), "x"(waveformOffset), "z"(analogWaveTable)
 		: "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23", "r24");
@@ -279,11 +283,11 @@ ISR(TIMER0_OVF_vect, ISR_NAKED)
 	
 		"lpm r24, Z" "\n\t"				//Read amplitude from program memory
 	
-		"out 0x27, r24" "\n\t"			//Out to OCR0A
+		"sts 0x88, r24" "\n\t"			//Out to OCR0A
 		"rjmp _OSC3_MATH" "\n\t"
 	
 		"_OSC2_NOISE: " "\n\t"
-		"out 0x27, r12" "\n\t"
+		"sts 0x88, r12" "\n\t"
 		:
 		: ""(oscPhaseShift[2]), "x"(waveformOffset), "z"(analogWaveTable)
 		: "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23", "r24");
@@ -336,11 +340,11 @@ ISR(TIMER0_OVF_vect, ISR_NAKED)
 	
 		"lpm r24, Z" "\n\t"				//Read amplitude from program memory
 	
-		"out 0x27, r24" "\n\t"			//Out to OCR0A
+		"sts 0x8A, r24" "\n\t"			//Out to OCR0A
 		"rjmp _OSC4_MATH" "\n\t"
 	
 		"_OSC3_NOISE: " "\n\t"
-		"out 0x27, r13" "\n\t"
+		"sts 0x8A, r13" "\n\t"
 		:
 		: ""(oscPhaseShift[3]), "x"(waveformOffset), "z"(analogWaveTable)
 		: "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23", "r24");
@@ -393,11 +397,11 @@ ISR(TIMER0_OVF_vect, ISR_NAKED)
 	
 		"lpm r24, Z" "\n\t"				//Read amplitude from program memory
 	
-		"out 0x27, r24" "\n\t"			//Out to OCR0A
+		"sts 0xB3, r24" "\n\t"			//Out to OCR0A
 		"rjmp _OSC5_MATH" "\n\t"
 	
 		"_OSC4_NOISE: " "\n\t"
-		"out 0x27, r14" "\n\t"
+		"sts 0xB3, r14" "\n\t"
 		:
 		: ""(oscPhaseShift[4]), "x"(waveformOffset), "z"(analogWaveTable)
 		: "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23", "r24");
@@ -450,14 +454,23 @@ ISR(TIMER0_OVF_vect, ISR_NAKED)
 	
 		"lpm r24, Z" "\n\t"				//Read amplitude from program memory
 	
-		"out 0x27, r24" "\n\t"			//Out to OCR0A
-		"reti" "\n\t"
+		"sts 0xB4, r24" "\n\t"			//Out to OCR0A
+		"jmp _QUIT" "\n\t"
 	
 		"_OSC5_NOISE: " "\n\t"
-		"out 0x27, r15" "\n\t"
+		"sts 0xB4, r15" "\n\t"
+		"jmp _QUIT" "\n\t"
 		:
 		: ""(oscPhaseShift[5]), "x"(waveformOffset), "z"(analogWaveTable)
-		: "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23", "r24");		
+		: "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23", "r24");
+		
+	asm("_QUIT: "
+		:
+		:
+		:);
+		
+	cbi(BUSY_PORT, BUSY_PIN);
+	reti();
 	/*oscPhaseAccum[0] += oscTuningWord[0];
 	if(oscWaveForm[0] != WAVE_NOISE)
 	{
@@ -466,7 +479,7 @@ ISR(TIMER0_OVF_vect, ISR_NAKED)
 	else
 		OCR0A = (unsigned char)lfsrState[0];
 	
-	/*oscPhaseAccum[1] += oscTuningWord[1];
+	oscPhaseAccum[1] += oscTuningWord[1];
 	if(oscWaveForm[1] != WAVE_NOISE)
 		OCR0B = pgm_read_byte(analogWaveTable + waveformOffset[oscWaveForm[1]] + (unsigned char)(*(((unsigned char*)&oscPhaseAccum[1]) + 3) + oscPhaseShift[1]));
 	else
