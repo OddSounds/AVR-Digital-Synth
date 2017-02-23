@@ -14,7 +14,7 @@
 #include "Globals.h"
 #include "WaveTables.h"
 
-#define USE_ENVELOPE
+//#define USE_ENVELOPE
 
 #define FILTER_LOW	0
 #define FILTER_HIGH	1
@@ -42,7 +42,7 @@ void lfoRouteFilterMode(void);
 inline void lowPassFilter(unsigned char *val);
 inline void highPassFilter(unsigned long *val);
 
-inline void noteUpdate(void);
+void noteUpdate(void);
 
 inline void osc1NoteUpdate();
 inline void osc1CentsUpdate();

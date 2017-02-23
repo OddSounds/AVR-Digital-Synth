@@ -43,6 +43,14 @@
 
 int main(void)
 {
+	oscSetup();
+	
+	noteUpdate();
+	
+	oscInit();
+	
+	sei();
+	
 	while(1)
 	{
 	}

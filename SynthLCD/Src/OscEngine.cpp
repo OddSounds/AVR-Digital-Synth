@@ -8,7 +8,7 @@
 
 typedef void(*FunctionPointer)();
 
-unsigned char osc1Note = 36;
+unsigned char osc1Note = 50;
 unsigned long osc1Freq = 0;
 unsigned char osc1PhaccuShort[3] = {0};
 unsigned long osc1Phaccu = 0;
@@ -38,7 +38,7 @@ char dOsc2PhaseShift = 0;
 unsigned char osc2Weight = 125;
 short osc2Out[3] = {0};
 bool osc2Sync = false;
-unsigned char osc2Note = 36;
+unsigned char osc2Note = 50;
 bool osc2Busy = false;
 
 bool duoMode = true;
