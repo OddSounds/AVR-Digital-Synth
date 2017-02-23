@@ -27,6 +27,11 @@ extern "C"
 
 void oscSetup()
 {	
+	oscWaveForm[0] = WAVE_SINE;
+	oscTuningWord[0] = keyFreq[50];
+	oscPhaseAccum[0] = 0;
+	oscPhaseShift[0] = 0;
+	
 	//Setup oscillator 0
 	TCCR0A = (1 << COM0A1) | (1 << COM0B1) | (1 << WGM00);
 	TIMSK0 = (1 << TOIE0);
